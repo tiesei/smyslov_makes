@@ -38,14 +38,15 @@
   nav {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 0 1.5rem;
+    padding: 0 0.75rem;
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 0.5rem;
     height: 48px;
     position: sticky;
     top: 0;
     z-index: 100;
+    overflow: hidden;
   }
 
   .nav-brand {
@@ -63,32 +64,33 @@
     font-size: 13px;
     color: var(--text-muted);
     text-decoration: none;
-    padding: 0 1rem;
+    padding: 0 0.6rem;
     height: 48px;
     display: flex;
     align-items: center;
     border-bottom: 2px solid transparent;
     transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
   }
 
   .nav-links a:hover { color: var(--text); }
   .nav-links a.active { color: var(--text); border-bottom-color: var(--accent); }
 
-  .nav-end { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+  .nav-end { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 
   /* MAIN */
-  main { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+  main { padding: 0.75rem; max-width: 100%; }
 
   /* ADD BAR */
   .add-bar {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 1rem 1.25rem;
+    padding: 0.6rem 0.75rem;
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
   }
 
   .add-bar input {
@@ -164,7 +166,9 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
   }
 
   table {
@@ -181,11 +185,22 @@
     color: var(--text-muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 0.6rem 0.75rem;
+    padding: 0.5rem 0.6rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    background: var(--bg);
   }
+
+  th:first-child, td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--bg);
+  }
+
+  td:first-child { background: var(--surface); }
+  tr:hover td:first-child { background: #f5f3ef; }
 
   td {
     padding: 0.65rem 0.75rem;
@@ -400,7 +415,7 @@
     <a href="calculator.html">Calculator</a>
   </div>
   <div class="nav-end">
-    <button class="btn btn-ghost" id="loginBtn" onclick="handleLogin()" style="font-size:12px;padding:4px 10px;">sign in</button>
+    <button class="btn btn-ghost" id="loginBtn" onclick="handleLogin()" style="font-size:11px;padding:3px 8px;white-space:nowrap;">sign in</button>
   </div>
 </nav>
 
