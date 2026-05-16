@@ -58,7 +58,7 @@
 
   .table-wrap { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow-x: auto; }
 
-  table { width: 100%; border-collapse: collapse; }
+  table { width: auto; min-width: 100%; border-collapse: collapse; table-layout: auto; }
   thead { background: var(--bg); }
 
   th {
@@ -69,36 +69,44 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;
+    white-space: normal;
     position: relative;
+    width: 1%;
   }
 
-  .th-inner { display: flex; align-items: center; gap: 3px; padding: 5px 8px; }
-  th:not(:first-child) .th-inner { justify-content: flex-end; }
+  .th-inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 6px;
+  }
 
-  .th-name { outline: none; cursor: text; min-width: 20px; }
-  .th-name:focus { color: var(--text); }
+  .th-left { display: flex; gap: 1px; align-items: center; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+  .th-right { display: flex; gap: 1px; align-items: center; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; justify-content: flex-end; }
+  th:hover .th-left, th:hover .th-right { opacity: 1; }
+
+  .th-name { outline: none; cursor: text; white-space: normal; word-break: break-word; text-align: center; }
+  th:first-child .th-name { text-align: left; }
   th:not(:first-child) .th-name { text-align: right; }
-
-  .col-actions { display: none; align-items: center; gap: 1px; flex-shrink: 0; }
-  th:hover .col-actions { display: flex; }
+  .th-name:focus { color: var(--text); }
 
   .col-btn { font-size: 10px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1px 3px; border-radius: 2px; line-height: 1; transition: color 0.1s, background 0.1s; }
   .col-btn:hover { color: var(--text); background: var(--border); }
   .col-btn.del:hover { color: #8b3a2a; }
 
-  th.th-add { width: 32px; padding: 0; }
-  .th-add-btn { width: 100%; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px 8px; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
+  th.th-add { width: 28px; padding: 0; }
+  .th-add-btn { width: 100%; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px 6px; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
   .th-add-btn:hover { color: var(--accent); }
-  th.th-del { width: 28px; }
+  th.th-del { width: 24px; }
 
-  td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; outline: none; }
-  td:focus { background: #fff !important; box-shadow: inset 0 0 0 1px var(--accent); border-radius: 2px; }
+  td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; outline: none; white-space: nowrap; width: 1%; }
+  td:focus { background: #fff !important; box-shadow: inset 0 0 0 1px var(--accent); border-radius: 2px; white-space: normal; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #f5f3ef; }
   tr.add-row-tr:hover td { background: transparent; }
 
-  td.name-cell { font-weight: 500; min-width: 130px; }
+  td.name-cell { font-weight: 500; white-space: nowrap; }
   td.num-cell { font-family: var(--mono); font-size: 12px; text-align: right; }
   td.zero { font-family: var(--mono); font-size: 12px; text-align: right; color: var(--text-muted); }
 
@@ -126,8 +134,6 @@
 
 <div class="toolbar">
   <span class="page-title">products</span>
-  <button class="btn" onclick="loadProducts()">↺ Refresh</button>
-  <button class="btn btn-primary" onclick="saveAll()">Save</button>
 </div>
 
 <div class="status-bar" id="statusBar"></div>
@@ -203,28 +209,23 @@ function makeColHeader(h, ci, total) {
   const inner = document.createElement("div");
   inner.className = "th-inner";
 
-  const actions = document.createElement("div");
-  actions.className = "col-actions";
-
+  // LEFT: move buttons (always in DOM, invisible until hover)
+  const left = document.createElement("div");
+  left.className = "th-left";
   if (ci > 0) {
     const ml = document.createElement("button");
     ml.className = "col-btn"; ml.textContent = "←"; ml.title = "Move left";
     ml.onclick = e => { e.stopPropagation(); moveCol(ci, -1); };
-    actions.appendChild(ml);
+    left.appendChild(ml);
   }
   if (ci < total - 1) {
     const mr = document.createElement("button");
     mr.className = "col-btn"; mr.textContent = "→"; mr.title = "Move right";
     mr.onclick = e => { e.stopPropagation(); moveCol(ci, 1); };
-    actions.appendChild(mr);
-  }
-  if (ci > 0) {
-    const dc = document.createElement("button");
-    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
-    dc.onclick = e => { e.stopPropagation(); deleteColumn(ci); };
-    actions.appendChild(dc);
+    left.appendChild(mr);
   }
 
+  // CENTER: name
   const name = document.createElement("span");
   name.className = "th-name";
   name.contentEditable = "true";
@@ -233,9 +234,19 @@ function makeColHeader(h, ci, total) {
   name.onblur = () => { headers[ci] = name.textContent.trim() || h; scheduleSave(); };
   name.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); name.blur(); } };
 
-  if (ci === 0) { inner.appendChild(name); inner.appendChild(actions); }
-  else { inner.appendChild(actions); inner.appendChild(name); }
+  // RIGHT: delete button (always in DOM, invisible until hover)
+  const right = document.createElement("div");
+  right.className = "th-right";
+  if (ci > 0) {
+    const dc = document.createElement("button");
+    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
+    dc.onclick = e => { e.stopPropagation(); deleteColumn(ci); };
+    right.appendChild(dc);
+  }
 
+  inner.appendChild(left);
+  inner.appendChild(name);
+  inner.appendChild(right);
   th.appendChild(inner);
   return th;
 }
