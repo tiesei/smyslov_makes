@@ -192,15 +192,7 @@
     background: var(--bg);
   }
 
-  th:first-child, td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 2;
-    background: var(--bg);
-  }
 
-  td:first-child { background: var(--surface); }
-  tr:hover td:first-child { background: #f5f3ef; }
 
   td {
     padding: 0.65rem 0.75rem;
@@ -415,7 +407,7 @@
     <a href="calculator.html">Calculator</a>
   </div>
   <div class="nav-end">
-    <button class="btn btn-ghost" id="loginBtn" onclick="handleLogin()" style="font-size:11px;padding:3px 8px;white-space:nowrap;">sign in</button>
+    <button class="btn btn-ghost" id="loginBtn" onclick="handleLogin()" style="font-size:11px;padding:3px 8px;white-space:nowrap;flex-shrink:0;">sign in</button>
   </div>
 </nav>
 
