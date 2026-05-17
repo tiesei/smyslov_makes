@@ -14,12 +14,7 @@
     --text: #1a1a18;
     --text-muted: #888880;
     --accent: #2d5a3d;
-    --in-stock: #2d5a3d;
-    --in-stock-bg: #e8f0eb;
     --out: #8b3a2a;
-    --out-bg: #f5ebe8;
-    --sold: #7a5c1a;
-    --sold-bg: #f5f0e0;
     --mono: 'DM Mono', monospace;
     --sans: 'DM Sans', sans-serif;
   }
@@ -112,34 +107,46 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     overflow-x: auto; -webkit-overflow-scrolling: touch;
   }
-  table { width: 100%; border-collapse: collapse; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 
   th {
     font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text-muted);
     letter-spacing: 0.06em; text-transform: uppercase; padding: 0.5rem 0.6rem;
     text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--bg);
+    overflow: hidden;
   }
   th.sortable { cursor: pointer; user-select: none; }
   th.sortable:hover { color: var(--text); }
   th.sort-asc::after { content: " ↑"; color: var(--accent); }
   th.sort-desc::after { content: " ↓"; color: var(--accent); }
 
+  /* Column widths */
+  th.col-type    { width: 90px; }
+  th.col-photo   { width: 88px; }
+  th.col-title   { width: 200px; }
+  th.col-desc    { width: 180px; }
+  th.col-notes   { width: 150px; }
+  th.col-colors  { width: 160px; }
+  th.col-weight  { width: 90px; }
+  th.col-price   { width: 100px; }
+  th.col-action  { width: 40px; }
+
   td {
     padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border);
-    vertical-align: middle; font-size: 13px;
+    vertical-align: middle; font-size: 13px; overflow: hidden;
   }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #f5f3ef; }
 
   .thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; display: block; cursor: zoom-in; transition: transform 0.2s, box-shadow 0.2s; background: var(--bg); }
   .thumb:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-  .thumb.expanded { width: 260px; height: 260px; cursor: zoom-out; position: relative; z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+  .thumb.expanded { width: 220px; height: 220px; cursor: zoom-out; position: relative; z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
 
   select.type-select {
     font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
     padding: 2px 22px 2px 7px; border-radius: 4px; border: 1px solid var(--border);
     background-color: var(--bg); color: var(--text-muted); cursor: pointer; outline: none;
-    appearance: none;
+    appearance: none; width: 100%;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 6px center;
   }
@@ -152,26 +159,33 @@
     50% { box-shadow: 0 0 0 3px rgba(192,57,43,0.15); }
   }
 
-  .title-cell { min-width: 180px; max-width: 260px; }
-  .title-text { font-weight: 500; font-size: 13px; line-height: 1.4; }
+  .title-text {
+    font-weight: 500; font-size: 13px; line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   .title-link {
     font-family: var(--mono); font-size: 11px; color: var(--accent);
     text-decoration: none; display: inline-block; margin-top: 4px; opacity: 0.75;
   }
   .title-link:hover { opacity: 1; text-decoration: underline; }
 
-  .desc-cell { min-width: 160px; max-width: 220px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+  .desc-text {
+    font-size: 12px; color: var(--text-muted); line-height: 1.4;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
 
   textarea.notes {
     font-family: var(--sans); font-size: 12px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 5px; padding: 5px 7px; width: 130px; height: 52px; resize: none;
+    border-radius: 5px; padding: 5px 7px; width: 100%; height: 52px; resize: none;
     color: var(--text); outline: none; transition: border-color 0.15s; line-height: 1.4;
   }
   textarea.notes:focus { border-color: var(--accent); }
+  textarea.notes.saving { border-color: var(--text-muted); }
+  textarea.notes.saved { border-color: var(--accent); }
 
   select.color-select, select.options-select {
     font-family: var(--sans); font-size: 12px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 5px; padding: 4px 24px 4px 6px; width: 150px; color: var(--text); outline: none; cursor: pointer;
+    border-radius: 5px; padding: 4px 24px 4px 6px; width: 100%; color: var(--text); outline: none; cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 8px center;
@@ -192,7 +206,7 @@
   .empty-state p { font-size: 14px; margin-top: 0.5rem; }
 
   @media (max-width: 768px) {
-    .desc-cell { display: none; }
+    th.col-desc, td.col-desc { display: none; }
     .thumb { width: 56px; height: 56px; }
   }
 </style>
@@ -232,15 +246,15 @@
     <table>
       <thead>
         <tr>
-          <th style="width:1%">Type</th>
-          <th style="width:1%">Photo</th>
-          <th class="title-cell sortable" data-col="title">Title</th>
-          <th class="desc-cell">Description</th>
-          <th style="width:1%">Notes</th>
-          <th style="width:1%">Colors / Options</th>
-          <th class="sortable" data-col="weight">Weight</th>
-          <th class="sortable" data-col="price">Price</th>
-          <th style="width:1%"></th>
+          <th class="col-type">Type</th>
+          <th class="col-photo">Photo</th>
+          <th class="col-title sortable" data-col="title">Title</th>
+          <th class="col-desc">Description</th>
+          <th class="col-notes">Notes</th>
+          <th class="col-colors">Colors / Options</th>
+          <th class="col-weight sortable" data-col="weight">Weight</th>
+          <th class="col-price sortable" data-col="price">Price</th>
+          <th class="col-action"></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -344,12 +358,12 @@ function renderRow(item, idx) {
   const colors = Array.isArray(item.colors) ? item.colors : [];
   const variants = Array.isArray(item.variants) ? item.variants : [];
   const itemUrl = item.url || "";
-  const savedNote = localStorage.getItem("note_" + (itemUrl || idx)) || "";
 
   const tr = document.createElement("tr");
 
   // TYPE
   const tdType = document.createElement("td");
+  tdType.className = "col-type";
   const typeSel = document.createElement("select");
   typeSel.className = "type-select" + (!item.type ? " unset" : "");
   const ph = document.createElement("option");
@@ -370,6 +384,7 @@ function renderRow(item, idx) {
 
   // PHOTO
   const tdPhoto = document.createElement("td");
+  tdPhoto.className = "col-photo";
   const img = document.createElement("img");
   img.className = "thumb";
   img.src = colors[0]?.image || "";
@@ -380,7 +395,7 @@ function renderRow(item, idx) {
 
   // TITLE + link
   const tdTitle = document.createElement("td");
-  tdTitle.className = "title-cell";
+  tdTitle.className = "col-title";
   const titleDiv = document.createElement("div");
   titleDiv.className = "title-text";
   titleDiv.textContent = item.title || "—";
@@ -396,28 +411,45 @@ function renderRow(item, idx) {
 
   // DESC
   const tdDesc = document.createElement("td");
-  tdDesc.className = "desc-cell";
-  const d = item.description || "";
-  tdDesc.textContent = d.length > 100 ? d.slice(0, 100) + "…" : d;
+  tdDesc.className = "col-desc";
+  const descDiv = document.createElement("div");
+  descDiv.className = "desc-text";
+  descDiv.textContent = item.description || "";
+  tdDesc.appendChild(descDiv);
 
-  // NOTES
+  // NOTES — saved to Sheets, debounced 1.5s
   const tdNotes = document.createElement("td");
+  tdNotes.className = "col-notes";
   const ta = document.createElement("textarea");
-  ta.className = "notes"; ta.placeholder = "Add note…"; ta.value = savedNote;
-  ta.oninput = () => localStorage.setItem("note_" + (itemUrl || idx), ta.value);
+  ta.className = "notes";
+  ta.placeholder = "Add note…";
+  ta.value = item.notes || "";
+  let noteTimer = null;
+  ta.oninput = () => {
+    ta.classList.remove("saved");
+    ta.classList.add("saving");
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(async () => {
+      await saveNote(itemUrl, ta.value);
+      ta.classList.remove("saving");
+      ta.classList.add("saved");
+      setTimeout(() => ta.classList.remove("saved"), 1500);
+    }, 1500);
+  };
   tdNotes.appendChild(ta);
 
   // COLORS
   const tdColors = document.createElement("td");
+  tdColors.className = "col-colors";
 
   // WEIGHT
   const tdWeight = document.createElement("td");
-  tdWeight.className = "mono-cell";
+  tdWeight.className = "mono-cell col-weight";
   tdWeight.textContent = item.weight || "—";
 
   // PRICE
   const tdPrice = document.createElement("td");
-  tdPrice.className = "mono-cell";
+  tdPrice.className = "mono-cell col-price";
   const initP = colors[0]?.price_per_unit;
   tdPrice.textContent = initP
     ? initP.toFixed(2).replace(".", ",") + " EUR"
@@ -461,6 +493,7 @@ function renderRow(item, idx) {
 
   // REPARSE
   const tdAction = document.createElement("td");
+  tdAction.className = "col-action";
   const repBtn = document.createElement("button");
   repBtn.className = "reparse-btn"; repBtn.title = "Refresh"; repBtn.textContent = "↻";
   repBtn.onclick = () => reparseMaterial(itemUrl, repBtn);
@@ -573,6 +606,17 @@ async function saveType(url, type) {
       body: JSON.stringify({ url, type })
     });
   } catch(e) { console.warn("saveType failed", e); }
+}
+
+// ── SAVE NOTE ─────────────────────────────────────────────────────────────────
+async function saveNote(url, note) {
+  if (!url) return;
+  try {
+    await fetch(`${API}/update-note`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ url, note })
+    });
+  } catch(e) { console.warn("saveNote failed", e); }
 }
 
 function handleLogin() { alert("Google login coming soon"); }
