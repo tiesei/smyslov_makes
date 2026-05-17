@@ -25,7 +25,7 @@
   nav {
     background: var(--surface); border-bottom: 1px solid var(--border);
     padding: 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;
-    height: 48px; position: sticky; top: 0; z-index: 100;
+    height: 60px; position: sticky; top: 0; z-index: 100;
   }
 
   .nav-brand {
@@ -34,19 +34,24 @@
     padding: 2px 0;
   }
   .nav-brand img {
-    height: 26px; width: auto; display: block;
+    height: 52px; width: auto; display: block;
+    mix-blend-mode: multiply;
   }
   .nav-brand-sub {
     font-family: var(--mono); font-size: 9px; font-weight: 500;
     color: var(--text-muted); letter-spacing: 0.12em;
     text-transform: lowercase; line-height: 1; margin-top: 1px;
-    padding-left: 1px;
+    /* aligned to inner logo content, not full PNG canvas */
+    padding-left: 6px;
+    width: 40px; /* approx inner logo width at 52px height */
+    text-align: justify;
+    text-align-last: justify;
   }
 
   .nav-links { display: flex; }
   .nav-links a {
     font-size: 13px; color: var(--text-muted); text-decoration: none;
-    padding: 0 0.6rem; height: 48px; display: flex; align-items: center;
+    padding: 0 0.6rem; height: 60px; display: flex; align-items: center;
     border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; white-space: nowrap;
   }
   .nav-links a:hover { color: var(--text); }
@@ -215,62 +220,31 @@
     .thumb { width: 56px; height: 56px; }
   }
 
-  /* ── INTRO OVERLAY ─────────────────────────────────────────────────────── */
-  #intro-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(10, 12, 20, 0.96);
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none;
-    transition: opacity 1.2s ease;
-  }
-  #intro-overlay.fade-out { opacity: 0; }
-  #intro-overlay.hidden { display: none; }
-
-  #intro-logo {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    opacity: 0;
-  }
-  #intro-logo img {
-    height: 72px; width: auto;
-    filter: drop-shadow(0 0 12px rgba(180,200,255,0.4));
-  }
-  #intro-logo-sub {
-    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.2em;
-    color: rgba(200, 210, 240, 0.85); text-transform: lowercase;
-  }
-
-  @keyframes glitch-flicker {
+  /* ── NAV GLITCH ANIMATION ───────────────────────────────────────────────── */
+  @keyframes nav-glitch {
     0%   { opacity: 0; transform: translate(0,0); }
-    5%   { opacity: 1; transform: translate(-2px, 1px); }
-    6%   { opacity: 0; transform: translate(0,0); }
-    10%  { opacity: 0; }
-    11%  { opacity: 1; transform: translate(3px, -1px); }
-    12%  { opacity: 0.3; transform: translate(-1px, 0); }
-    13%  { opacity: 1; transform: translate(0,0); }
+    4%   { opacity: 1; transform: translate(-3px, 0); }
+    5%   { opacity: 0; }
+    9%   { opacity: 0; }
+    10%  { opacity: 1; transform: translate(2px, 1px); }
+    11%  { opacity: 0.2; transform: translate(0,0); }
+    12%  { opacity: 1; }
+    28%  { opacity: 1; transform: translate(0,0); }
+    29%  { opacity: 0.1; transform: translate(-2px,0); }
     30%  { opacity: 1; transform: translate(0,0); }
-    31%  { opacity: 0.2; transform: translate(2px, 0); }
-    32%  { opacity: 1; transform: translate(0,0); }
-    55%  { opacity: 1; transform: translate(0,0); }
-    56%  { opacity: 0; }
-    57%  { opacity: 1; transform: translate(-1px, 1px); }
-    58%  { opacity: 1; transform: translate(0,0); }
+    54%  { opacity: 1; }
+    55%  { opacity: 0; }
+    56%  { opacity: 1; transform: translate(1px,-1px); }
+    57%  { opacity: 1; transform: translate(0,0); }
     100% { opacity: 1; transform: translate(0,0); }
   }
 
-  .glitch-active {
-    animation: glitch-flicker 1.6s steps(1) forwards;
+  .nav-brand.glitch-run {
+    animation: nav-glitch 1.8s steps(1) forwards;
   }
 </style>
 </head>
 <body>
-
-<!-- INTRO OVERLAY -->
-<div id="intro-overlay" class="hidden">
-  <div id="intro-logo">
-    <img src="logo.png" alt="smysl makes">
-    <div id="intro-logo-sub">makes</div>
-  </div>
-</div>
 
 <nav>
   <a href="index.html" class="nav-brand">
@@ -325,7 +299,7 @@
 </main>
 
 <script>
-// ── INTRO ANIMATION ───────────────────────────────────────────────────────────
+// ── NAV GLITCH ON RETURN VISIT ───────────────────────────────────────────────
 (function() {
   const VISIT_KEY = "smysl_last_visit";
   const THRESHOLD = 30 * 60 * 1000;
@@ -334,21 +308,14 @@
   localStorage.setItem(VISIT_KEY, now);
 
   if (now - last > THRESHOLD) {
-    const overlay = document.getElementById("intro-overlay");
-    const logo = document.getElementById("intro-logo");
-    overlay.classList.remove("hidden");
-
-    setTimeout(() => {
-      logo.classList.add("glitch-active");
-    }, 200);
-
-    setTimeout(() => {
-      overlay.classList.add("fade-out");
-    }, 2200);
-
-    setTimeout(() => {
-      overlay.classList.add("hidden");
-    }, 3500);
+    const brand = document.querySelector(".nav-brand");
+    if (brand) {
+      brand.style.opacity = "0";
+      setTimeout(() => {
+        brand.style.opacity = "";
+        brand.classList.add("glitch-run");
+      }, 300);
+    }
   }
 })();
 
