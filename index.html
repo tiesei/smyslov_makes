@@ -27,12 +27,7 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
 
   nav {
     background: var(--surface);
@@ -45,79 +40,37 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    overflow: hidden;
   }
 
-  .nav-brand {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    letter-spacing: 0.05em;
-    text-decoration: none;
-  }
-
+  .nav-brand { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.05em; text-decoration: none; }
   .nav-links { display: flex; gap: 0; }
-
   .nav-links a {
-    font-size: 13px;
-    color: var(--text-muted);
-    text-decoration: none;
-    padding: 0 0.6rem;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
-    white-space: nowrap;
+    font-size: 13px; color: var(--text-muted); text-decoration: none;
+    padding: 0 0.6rem; height: 48px; display: flex; align-items: center;
+    border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; white-space: nowrap;
   }
-
   .nav-links a:hover { color: var(--text); }
   .nav-links a.active { color: var(--text); border-bottom-color: var(--accent); }
-
   .nav-end { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 
   main { padding: 0.75rem; max-width: 100%; }
 
   .add-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.6rem 0.75rem;
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin-bottom: 0.75rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.6rem 0.75rem; display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;
   }
-
   .add-bar input {
-    flex: 1;
-    font-family: var(--mono);
-    font-size: 13px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
+    flex: 1; font-family: var(--mono); font-size: 13px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.75rem;
+    color: var(--text); outline: none; transition: border-color 0.15s;
   }
-
   .add-bar input:focus { border-color: var(--accent); }
   .add-bar input::placeholder { color: var(--text-muted); }
 
   .btn {
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 0.5rem 1.1rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    white-space: nowrap;
+    font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 0.5rem 1.1rem;
+    border-radius: 6px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
   }
-
   .btn:active { transform: scale(0.97); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   .btn-primary { background: var(--accent); color: #fff; }
@@ -125,234 +78,168 @@
   .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
   .btn-ghost:hover:not(:disabled) { background: var(--bg); color: var(--text); }
 
-  .status-bar {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 0.4rem 0;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 24px;
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
+    flex-wrap: wrap;
   }
 
+  .filter-label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+
+  .multiselect-wrap { position: relative; }
+
+  .multiselect-btn {
+    font-family: var(--sans); font-size: 12px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 6px; padding: 4px 28px 4px 10px;
+    color: var(--text); cursor: pointer; white-space: nowrap;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+    min-width: 120px; text-align: left;
+  }
+  .multiselect-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  .multiselect-dropdown {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 50; min-width: 160px; padding: 4px;
+  }
+  .multiselect-dropdown.open { display: block; }
+
+  .multiselect-option {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    border-radius: 5px; cursor: pointer; font-size: 12px; transition: background 0.1s;
+  }
+  .multiselect-option:hover { background: var(--bg); }
+  .multiselect-option input[type=checkbox] { accent-color: var(--accent); }
+
+  .filter-clear {
+    font-size: 11px; font-family: var(--mono); color: var(--text-muted);
+    background: none; border: none; cursor: pointer; padding: 0;
+    text-decoration: underline;
+  }
+  .filter-clear:hover { color: var(--text); }
+
+  .status-bar {
+    font-family: var(--mono); font-size: 12px; color: var(--text-muted);
+    padding: 0.4rem 0; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; min-height: 24px;
+  }
   .status-bar.loading { color: var(--accent); }
   .status-bar.error { color: var(--out); }
 
   .spinner {
-    width: 12px; height: 12px;
-    border: 1.5px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    display: inline-block;
+    width: 12px; height: 12px; border: 1.5px solid currentColor;
+    border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%;
   }
 
   table { width: 100%; border-collapse: collapse; }
   thead { background: var(--bg); }
 
   th {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.5rem 0.6rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    background: var(--bg);
+    font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text-muted);
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 0.5rem 0.6rem;
+    text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--bg);
   }
+
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--text); }
+  th.sorted-asc::after { content: " ↑"; }
+  th.sorted-desc::after { content: " ↓"; }
 
   td {
-    padding: 0.65rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-    font-size: 13px;
+    padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border);
+    vertical-align: middle; font-size: 13px;
   }
-
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #f5f3ef; }
 
-  .thumb-cell { width: 80px; }
-
+  .thumb-cell { width: 1%; }
   .thumb {
-    width: 72px;
-    height: 72px;
-    object-fit: cover;
-    border-radius: 6px;
-    display: block;
-    cursor: zoom-in;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background: var(--bg);
+    width: 72px; height: 72px; object-fit: cover; border-radius: 6px; display: block;
+    cursor: zoom-in; transition: transform 0.2s, box-shadow 0.2s; background: var(--bg);
   }
-
   .thumb:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+  .thumb.expanded { width: 260px; height: 260px; cursor: zoom-out; position: relative; z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
 
-  .thumb.expanded {
-    width: 260px;
-    height: 260px;
-    cursor: zoom-out;
-    position: relative;
-    z-index: 10;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  }
-
-  .type-badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
+  /* TYPE SELECT in cell */
+  select.type-select {
+    font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    padding: 2px 22px 2px 7px; border-radius: 4px; border: 1px solid var(--border);
+    background-color: var(--bg); color: var(--text-muted); cursor: pointer; outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 6px center;
+    transition: border-color 0.15s, background-color 0.15s;
     white-space: nowrap;
   }
+  select.type-select.unset {
+    border-color: #c0392b; background-color: #fdf0ee; color: #c0392b;
+    animation: pulse-red 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); }
+    50% { box-shadow: 0 0 0 3px rgba(192,57,43,0.15); }
+  }
+  select.type-select:focus { border-color: var(--accent); }
 
-  .title-cell { min-width: 160px; max-width: 200px; }
+  .title-cell { min-width: 160px; max-width: 220px; }
   .title-text { font-weight: 500; font-size: 13px; line-height: 1.4; }
   .title-link {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    text-decoration: none;
-    display: inline-block;
-    margin-top: 3px;
-    opacity: 0.7;
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    text-decoration: none; display: inline-block; margin-top: 3px; opacity: 0.7;
   }
   .title-link:hover { opacity: 1; text-decoration: underline; }
 
   .desc-cell { min-width: 160px; max-width: 220px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
 
-  .notes-cell { width: 150px; }
+  .notes-cell { width: 1%; }
   textarea.notes {
-    font-family: var(--sans);
-    font-size: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 5px 7px;
-    width: 140px;
-    height: 52px;
-    resize: none;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    line-height: 1.4;
+    font-family: var(--sans); font-size: 12px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 5px; padding: 5px 7px; width: 140px; height: 52px; resize: none;
+    color: var(--text); outline: none; transition: border-color 0.15s; line-height: 1.4;
   }
   textarea.notes:focus { border-color: var(--accent); }
 
-  .colors-cell { width: 150px; }
-
-  select.color-select {
-    font-family: var(--sans);
-    font-size: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 4px 6px;
-    width: 140px;
-    color: var(--text);
-    outline: none;
-    cursor: pointer;
+  .colors-cell { width: 1%; }
+  select.color-select, select.options-select {
+    font-family: var(--sans); font-size: 12px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 5px; padding: 4px 6px; width: 140px; color: var(--text); outline: none; cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    padding-right: 24px;
+    background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;
   }
+  select.color-select:focus, select.options-select:focus { border-color: var(--accent); }
+  select.options-select { margin-top: 4px; }
 
-  select.color-select:focus { border-color: var(--accent); }
+  .mono-cell { font-family: var(--mono); font-size: 12px; white-space: nowrap; color: var(--text); }
 
-  select.options-select {
-    font-family: var(--sans);
-    font-size: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 4px 6px;
-    width: 140px;
-    color: var(--text);
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    padding-right: 24px;
-    margin-top: 4px;
-  }
-
-  .mono-cell {
-    font-family: var(--mono);
-    font-size: 12px;
-    white-space: nowrap;
-    color: var(--text);
-  }
-
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 10px;
-    white-space: nowrap;
-  }
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
   .badge.in  { background: var(--in-stock-bg); color: var(--in-stock); }
   .badge.out { background: var(--out-bg); color: var(--out); }
   .badge.sold{ background: var(--sold-bg); color: var(--sold); }
   .badge.check{ background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
 
   .reparse-btn {
-    font-size: 14px;
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.15s, border-color 0.15s, transform 0.2s;
+    font-size: 14px; background: none; border: 1px solid var(--border); border-radius: 5px;
+    width: 28px; height: 28px; cursor: pointer; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.15s, border-color 0.15s;
   }
-
   .reparse-btn:hover { color: var(--accent); border-color: var(--accent); }
   .reparse-btn.spinning { animation: spin 0.8s linear infinite; }
 
   .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
   .empty-state p { font-size: 14px; margin-top: 0.5rem; }
 
-  .skeleton {
-    background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.2s infinite;
-    border-radius: 4px;
-    height: 14px;
-  }
-
-  @keyframes shimmer { to { background-position: -200% 0; } }
-
   @media (max-width: 768px) {
-    main { padding: 1rem; }
+    main { padding: 0.5rem; }
     .add-bar { flex-wrap: wrap; }
-    .add-bar input { min-width: 0; }
     .desc-cell { display: none; }
     .thumb { width: 56px; height: 56px; }
   }
@@ -368,7 +255,7 @@
     <a href="calculator.html">Calculator</a>
   </div>
   <div class="nav-end">
-    <button class="btn btn-ghost" id="loginBtn" onclick="handleLogin()" style="font-size:11px;padding:3px 8px;white-space:nowrap;flex-shrink:0;">sign in</button>
+    <button class="btn btn-ghost" onclick="handleLogin()" style="font-size:11px;padding:3px 8px;">sign in</button>
   </div>
 </nav>
 
@@ -376,6 +263,15 @@
   <div class="add-bar">
     <input type="url" id="urlInput" placeholder="Paste product URL from extremtextil.de or adventurexpert.com…" />
     <button class="btn btn-primary" id="addBtn" onclick="addMaterial()">Add material</button>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <div class="multiselect-wrap" id="typeFilterWrap">
+      <button class="multiselect-btn" id="typeFilterBtn" onclick="toggleTypeDropdown()">All types</button>
+      <div class="multiselect-dropdown" id="typeDropdown"></div>
+    </div>
+    <button class="filter-clear" id="filterClearBtn" style="display:none" onclick="clearTypeFilter()">clear</button>
   </div>
 
   <div class="status-bar" id="statusBar"></div>
@@ -386,49 +282,44 @@
         <tr>
           <th>Type</th>
           <th class="thumb-cell">Photo</th>
-          <th class="title-cell">Title</th>
+          <th class="title-cell sortable" data-col="title" onclick="sortBy('title')">Title</th>
           <th class="desc-cell">Description</th>
           <th class="notes-cell">Notes</th>
           <th class="colors-cell">Colors / Options</th>
-          <th>Weight</th>
-          <th>Price</th>
-          <th>Stock</th>
+          <th class="sortable" data-col="weight" onclick="sortBy('weight')">Weight</th>
+          <th class="sortable" data-col="price" onclick="sortBy('price')">Price</th>
+          <th class="sortable" data-col="availability" onclick="sortBy('availability')">Stock</th>
           <th></th>
         </tr>
       </thead>
-      <tbody id="tbody">
-        <tr>
-          <td colspan="10">
-            <div class="empty-state">
-              <div style="font-size:32px;margin-bottom:8px;">⬡</div>
-              <p>No materials yet — paste a URL above to add one.</p>
-            </div>
-          </td>
-        </tr>
-      </tbody>
+      <tbody id="tbody"></tbody>
     </table>
   </div>
 </main>
 
 <script>
 const API = "https://materials-parser-api.onrender.com";
+const TYPES = ["Fabric", "Foam", "Webbing", "Zipper", "Furniture", "Binding"];
 
+let allMaterials = [];
+let activeTypes = new Set();
+let sortCol = "";
+let sortDir = 1; // 1 = asc, -1 = desc
+
+// ── STATUS ────────────────────────────────────────────────────────────────────
 function setStatus(msg, type = "") {
   const bar = document.getElementById("statusBar");
   bar.className = "status-bar" + (type ? " " + type : "");
-  bar.innerHTML = type === "loading"
-    ? `<span class="spinner"></span> ${msg}`
-    : msg;
+  bar.innerHTML = type === "loading" ? `<span class="spinner"></span> ${msg}` : msg;
 }
-
 function clearStatus() {
   const bar = document.getElementById("statusBar");
-  bar.innerHTML = "";
-  bar.className = "status-bar";
+  bar.innerHTML = ""; bar.className = "status-bar";
 }
 
+// ── BADGE ─────────────────────────────────────────────────────────────────────
 function badge(av) {
-  if (!av) return `<span class="badge check">—</span>`;
+  if (!av || av.startsWith("http")) return `<span class="badge check">—</span>`;
   const l = av.toLowerCase();
   if (l.includes("in stock"))  return `<span class="badge in">In stock</span>`;
   if (l.includes("sold"))      return `<span class="badge sold">Sold out</span>`;
@@ -436,6 +327,96 @@ function badge(av) {
   return `<span class="badge check">${av}</span>`;
 }
 
+// ── TYPE FILTER ───────────────────────────────────────────────────────────────
+function buildTypeDropdown() {
+  const dd = document.getElementById("typeDropdown");
+  dd.innerHTML = "";
+  TYPES.forEach(t => {
+    const label = document.createElement("label");
+    label.className = "multiselect-option";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = t;
+    cb.checked = activeTypes.has(t);
+    cb.onchange = () => {
+      if (cb.checked) activeTypes.add(t); else activeTypes.delete(t);
+      updateFilterBtn();
+      renderTable();
+    };
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(t));
+    dd.appendChild(label);
+  });
+}
+
+function toggleTypeDropdown() {
+  const dd = document.getElementById("typeDropdown");
+  dd.classList.toggle("open");
+}
+
+function updateFilterBtn() {
+  const btn = document.getElementById("typeFilterBtn");
+  const clear = document.getElementById("filterClearBtn");
+  if (activeTypes.size === 0) {
+    btn.textContent = "All types";
+    btn.classList.remove("active");
+    clear.style.display = "none";
+  } else {
+    btn.textContent = [...activeTypes].join(", ");
+    btn.classList.add("active");
+    clear.style.display = "";
+  }
+}
+
+function clearTypeFilter() {
+  activeTypes.clear();
+  updateFilterBtn();
+  buildTypeDropdown();
+  renderTable();
+}
+
+// Close dropdown on outside click
+document.addEventListener("click", e => {
+  const wrap = document.getElementById("typeFilterWrap");
+  if (!wrap.contains(e.target)) {
+    document.getElementById("typeDropdown").classList.remove("open");
+  }
+});
+
+// ── SORT ──────────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+  document.querySelectorAll("th.sortable").forEach(th => {
+    th.classList.remove("sorted-asc", "sorted-desc");
+    if (th.dataset.col === col) th.classList.add(sortDir === 1 ? "sorted-asc" : "sorted-desc");
+  });
+  renderTable();
+}
+
+function getSortValue(item, col) {
+  if (col === "title") return (item.title || "").toLowerCase();
+  if (col === "weight") {
+    const m = (item.weight || "").match(/[\d,\.]+/);
+    return m ? parseFloat(m[0].replace(",", ".")) : 0;
+  }
+  if (col === "price") {
+    const colors = Array.isArray(item.colors) ? item.colors : [];
+    const p = colors[0]?.price_per_unit;
+    if (p) return p;
+    const m = (item.price || "").match(/[\d,\.]+/);
+    return m ? parseFloat(m[0].replace(",", ".")) : 0;
+  }
+  if (col === "availability") {
+    const colors = Array.isArray(item.colors) ? item.colors : [];
+    const av = (colors[0]?.availability || item.availability || "").toLowerCase();
+    if (av.includes("in stock")) return 0;
+    if (av.includes("out")) return 1;
+    return 2;
+  }
+  return "";
+}
+
+// ── RENDER ROW ────────────────────────────────────────────────────────────────
 function renderRow(item, idx) {
   const colors = Array.isArray(item.colors) ? item.colors : [];
   const variants = Array.isArray(item.variants) ? item.variants : [];
@@ -443,10 +424,36 @@ function renderRow(item, idx) {
 
   const tr = document.createElement("tr");
   tr.dataset.url = item.url || "";
+  tr.dataset.type = item.type || "";
 
-  // TYPE
+  // TYPE SELECT
   const tdType = document.createElement("td");
-  tdType.innerHTML = `<span class="type-badge">${item.type || "—"}</span>`;
+  tdType.style.width = "1%";
+  const typeSel = document.createElement("select");
+  typeSel.className = "type-select" + (!item.type ? " unset" : "");
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select type…";
+  placeholder.disabled = true;
+  placeholder.selected = !item.type;
+  typeSel.appendChild(placeholder);
+
+  TYPES.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    if (t === item.type) opt.selected = true;
+    typeSel.appendChild(opt);
+  });
+
+  typeSel.onchange = () => {
+    typeSel.classList.remove("unset");
+    item.type = typeSel.value;
+    tr.dataset.type = typeSel.value;
+    saveTypeToSheets(item.url, typeSel.value);
+  };
+  tdType.appendChild(typeSel);
 
   // PHOTO
   const tdPhoto = document.createElement("td");
@@ -459,7 +466,7 @@ function renderRow(item, idx) {
   img.onclick = () => img.classList.toggle("expanded");
   tdPhoto.appendChild(img);
 
-  // TITLE
+  // TITLE (with link)
   const tdTitle = document.createElement("td");
   tdTitle.className = "title-cell";
   tdTitle.innerHTML = `
@@ -483,7 +490,7 @@ function renderRow(item, idx) {
   ta.oninput = () => localStorage.setItem("note_" + (item.url || idx), ta.value);
   tdNotes.appendChild(ta);
 
-  // COLORS + OPTIONS
+  // COLORS
   const tdColors = document.createElement("td");
   tdColors.className = "colors-cell";
 
@@ -492,24 +499,21 @@ function renderRow(item, idx) {
   tdWeight.className = "mono-cell";
   tdWeight.textContent = item.weight || "—";
 
-  // PRICE — class price-cell for dynamic updates
+  // PRICE
   const tdPrice = document.createElement("td");
   tdPrice.className = "mono-cell price-cell";
-
-  // Set initial price from first color's price_per_unit, fallback to item.price
-  const initialPrice = colors[0]?.price_per_unit;
-  tdPrice.textContent = initialPrice
-    ? initialPrice.toFixed(2).replace(".", ",") + " EUR"
+  const initPrice = colors[0]?.price_per_unit;
+  tdPrice.textContent = initPrice
+    ? initPrice.toFixed(2).replace(".", ",") + " EUR"
     : (item.price || "—");
 
-  // STOCK — updates with color selection
+  // STOCK
   const tdStock = document.createElement("td");
   tdStock.innerHTML = badge(colors[0]?.availability || item.availability);
 
   if (colors.length > 0) {
     const colorSel = document.createElement("select");
     colorSel.className = "color-select";
-
     colors.forEach((c, i) => {
       const opt = document.createElement("option");
       opt.value = i;
@@ -518,20 +522,15 @@ function renderRow(item, idx) {
       if (!inStock) opt.style.color = "#bbb";
       colorSel.appendChild(opt);
     });
-
     colorSel.value = 0;
 
     const updateColorUI = (i) => {
       const c = colors[i];
       if (!c) return;
       if (c.image) img.src = c.image;
-      // Update price
-      if (c.price_per_unit) {
-        tdPrice.textContent = c.price_per_unit.toFixed(2).replace(".", ",") + " EUR";
-      } else if (item.price) {
-        tdPrice.textContent = item.price;
-      }
-      // Update stock badge
+      tdPrice.textContent = c.price_per_unit
+        ? c.price_per_unit.toFixed(2).replace(".", ",") + " EUR"
+        : (item.price || "—");
       tdStock.innerHTML = badge(c.availability || item.availability);
     };
 
@@ -543,8 +542,7 @@ function renderRow(item, idx) {
       optSel.className = "options-select";
       variants[0].options.forEach(o => {
         const opt = document.createElement("option");
-        opt.value = o;
-        opt.textContent = o;
+        opt.value = o; opt.textContent = o;
         optSel.appendChild(opt);
       });
       tdColors.appendChild(optSel);
@@ -559,7 +557,7 @@ function renderRow(item, idx) {
   repBtn.className = "reparse-btn";
   repBtn.title = "Refresh";
   repBtn.textContent = "↻";
-  repBtn.onclick = () => reparseMaterial(item.url, tr, repBtn);
+  repBtn.onclick = () => reparseMaterial(item.url, repBtn);
   tdAction.appendChild(repBtn);
 
   tr.appendChild(tdType);
@@ -576,27 +574,34 @@ function renderRow(item, idx) {
   return tr;
 }
 
-async function loadMaterials() {
-  setStatus("Loading…", "loading");
-  try {
-    const res = await fetch(`${API}/materials`);
-    const data = await res.json();
-    renderTable(data);
-    clearStatus();
-  } catch(e) {
-    setStatus("Failed to load materials. API may be waking up — try again in 30s.", "error");
-  }
-}
-
-function renderTable(data) {
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+function renderTable() {
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
 
-  if (!data || data.length === 0) {
+  let data = [...allMaterials];
+
+  // Filter
+  if (activeTypes.size > 0) {
+    data = data.filter(item => activeTypes.has(item.type));
+  }
+
+  // Sort
+  if (sortCol) {
+    data.sort((a, b) => {
+      const av = getSortValue(a, sortCol);
+      const bv = getSortValue(b, sortCol);
+      if (av < bv) return -sortDir;
+      if (av > bv) return sortDir;
+      return 0;
+    });
+  }
+
+  if (data.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10">
       <div class="empty-state">
         <div style="font-size:32px;margin-bottom:8px;">⬡</div>
-        <p>No materials yet — paste a URL above to add one.</p>
+        <p>${allMaterials.length === 0 ? "No materials yet — paste a URL above to add one." : "No materials match the filter."}</p>
       </div>
     </td></tr>`;
     return;
@@ -605,27 +610,34 @@ function renderTable(data) {
   data.forEach((item, idx) => tbody.appendChild(renderRow(item, idx)));
 }
 
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadMaterials() {
+  setStatus("Loading…", "loading");
+  try {
+    const res = await fetch(`${API}/materials`);
+    allMaterials = await res.json();
+    buildTypeDropdown();
+    renderTable();
+    clearStatus();
+  } catch(e) {
+    setStatus("Failed to load materials. API may be waking up — try again in 30s.", "error");
+  }
+}
+
+// ── ADD ───────────────────────────────────────────────────────────────────────
 async function addMaterial() {
   const input = document.getElementById("urlInput");
   const url = input.value.trim();
   if (!url) return;
-
   const btn = document.getElementById("addBtn");
   btn.disabled = true;
-  setStatus("Parsing… this may take 1–2 minutes for products with many colors.", "loading");
-
+  setStatus("Parsing… this may take 1–2 minutes.", "loading");
   try {
     const res = await fetch(`${API}/parse`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url })
     });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Parse failed");
-    }
-
+    if (!res.ok) { const err = await res.json(); throw new Error(err.detail || "Parse failed"); }
     const data = await res.json();
     input.value = "";
     await loadMaterials();
@@ -638,33 +650,43 @@ async function addMaterial() {
   }
 }
 
-async function reparseMaterial(url, tr, btn) {
+// ── REPARSE ───────────────────────────────────────────────────────────────────
+async function reparseMaterial(url, btn) {
   if (!url) return;
   btn.classList.add("spinning");
   btn.disabled = true;
   setStatus("Refreshing…", "loading");
-
   try {
     const res = await fetch(`${API}/parse`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url })
     });
-
     if (!res.ok) throw new Error("Reparse failed");
     await loadMaterials();
     setStatus("✓ Refreshed", "");
     setTimeout(clearStatus, 2000);
   } catch(e) {
     setStatus(`Error: ${e.message}`, "error");
+  } finally {
     btn.classList.remove("spinning");
     btn.disabled = false;
   }
 }
 
-function handleLogin() {
-  alert("Google login coming soon");
+// ── SAVE TYPE ─────────────────────────────────────────────────────────────────
+async function saveTypeToSheets(url, type) {
+  if (!url) return;
+  try {
+    await fetch(`${API}/update-type`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, type })
+    });
+  } catch(e) {
+    console.warn("Failed to save type:", e);
+  }
 }
+
+function handleLogin() { alert("Google login coming soon"); }
 
 document.getElementById("urlInput").addEventListener("keydown", e => {
   if (e.key === "Enter") addMaterial();
