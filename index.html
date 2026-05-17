@@ -544,15 +544,18 @@ function renderRow(item, idx) {
     // Always select first color regardless of stock
     colorSel.value = 0;
 
-    colorSel.onchange = () => {
-      const c = colors[parseInt(colorSel.value)];
-      if (c?.image) img.src = c.image;
-      if (c?.price_per_unit) {
+    const updateColorUI = (idx) => {
+      const c = colors[idx];
+      if (!c) return;
+      if (c.image) img.src = c.image;
+      if (c.price_per_unit) {
         const priceStr = c.price_per_unit.toFixed(2).replace(".", ",") + " EUR";
         const priceCell = colorSel.closest("tr")?.querySelector(".price-cell");
         if (priceCell) priceCell.textContent = priceStr;
       }
     };
+    colorSel.onchange = () => updateColorUI(parseInt(colorSel.value));
+    setTimeout(() => updateColorUI(0), 0);
 
     tdColors.appendChild(colorSel);
 
