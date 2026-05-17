@@ -142,7 +142,6 @@
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%23888880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 6px center;
-    transition: border-color 0.15s;
   }
   select.type-select.unset {
     border-color: #c0392b; background-color: #fdf0ee; color: #c0392b;
@@ -153,9 +152,12 @@
     50% { box-shadow: 0 0 0 3px rgba(192,57,43,0.15); }
   }
 
-  .title-cell { min-width: 160px; max-width: 220px; }
+  .title-cell { min-width: 180px; max-width: 260px; }
   .title-text { font-weight: 500; font-size: 13px; line-height: 1.4; }
-  .title-link { font-family: var(--mono); font-size: 11px; color: var(--accent); text-decoration: none; display: inline-block; margin-top: 3px; opacity: 0.7; }
+  .title-link {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    text-decoration: none; display: inline-block; margin-top: 4px; opacity: 0.75;
+  }
   .title-link:hover { opacity: 1; text-decoration: underline; }
 
   .desc-cell { min-width: 160px; max-width: 220px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
@@ -177,12 +179,6 @@
   select.options-select { margin-top: 4px; }
 
   .mono-cell { font-family: var(--mono); font-size: 12px; white-space: nowrap; }
-
-  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
-  .badge.in   { background: var(--in-stock-bg); color: var(--in-stock); }
-  .badge.out  { background: var(--out-bg); color: var(--out); }
-  .badge.sold { background: var(--sold-bg); color: var(--sold); }
-  .badge.none { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
 
   .reparse-btn {
     font-size: 14px; background: none; border: 1px solid var(--border); border-radius: 5px;
@@ -236,7 +232,7 @@
     <table>
       <thead>
         <tr>
-          <th>Type</th>
+          <th style="width:1%">Type</th>
           <th style="width:1%">Photo</th>
           <th class="title-cell sortable" data-col="title">Title</th>
           <th class="desc-cell">Description</th>
@@ -270,16 +266,6 @@ function setStatus(msg, type = "") {
 function clearStatus() {
   const bar = document.getElementById("statusBar");
   bar.innerHTML = ""; bar.className = "status-bar";
-}
-
-// ── BADGE ─────────────────────────────────────────────────────────────────────
-function stockBadge(av) {
-  if (!av || av.startsWith("http")) return `<span class="badge none">—</span>`;
-  const l = av.toLowerCase();
-  if (l.includes("in stock"))  return `<span class="badge in">In stock</span>`;
-  if (l.includes("sold"))      return `<span class="badge sold">Sold out</span>`;
-  if (l.includes("out"))       return `<span class="badge out">Out of stock</span>`;
-  return `<span class="badge none">${av}</span>`;
 }
 
 // ── TYPE FILTER ───────────────────────────────────────────────────────────────
@@ -325,19 +311,16 @@ document.addEventListener("click", e => {
 });
 
 // ── SORT ──────────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
+function initSortHeaders() {
   document.querySelectorAll("th.sortable").forEach(th => {
-    th.addEventListener("click", () => sortBy(th.dataset.col));
+    th.addEventListener("click", () => {
+      const col = th.dataset.col;
+      if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+      document.querySelectorAll("th.sortable").forEach(h => h.classList.remove("sort-asc", "sort-desc"));
+      th.classList.add(sortDir === 1 ? "sort-asc" : "sort-desc");
+      renderTable();
+    });
   });
-});
-
-function sortBy(col) {
-  if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
-  document.querySelectorAll("th.sortable").forEach(th => {
-    th.classList.remove("sort-asc", "sort-desc");
-    if (th.dataset.col === col) th.classList.add(sortDir === 1 ? "sort-asc" : "sort-desc");
-  });
-  renderTable();
 }
 
 function getSortVal(item, col) {
@@ -360,14 +343,13 @@ function getSortVal(item, col) {
 function renderRow(item, idx) {
   const colors = Array.isArray(item.colors) ? item.colors : [];
   const variants = Array.isArray(item.variants) ? item.variants : [];
-  const savedNote = localStorage.getItem("note_" + (item.url || idx)) || "";
+  const itemUrl = item.url || "";
+  const savedNote = localStorage.getItem("note_" + (itemUrl || idx)) || "";
 
   const tr = document.createElement("tr");
-  tr.dataset.url = item.url || "";
 
   // TYPE
   const tdType = document.createElement("td");
-  tdType.style.width = "1%";
   const typeSel = document.createElement("select");
   typeSel.className = "type-select" + (!item.type ? " unset" : "");
   const ph = document.createElement("option");
@@ -382,7 +364,7 @@ function renderRow(item, idx) {
   typeSel.onchange = () => {
     typeSel.classList.remove("unset");
     item.type = typeSel.value;
-    saveType(item.url, typeSel.value);
+    saveType(itemUrl, typeSel.value);
   };
   tdType.appendChild(typeSel);
 
@@ -399,10 +381,18 @@ function renderRow(item, idx) {
   // TITLE + link
   const tdTitle = document.createElement("td");
   tdTitle.className = "title-cell";
-  tdTitle.innerHTML = `
-    <div class="title-text">${item.title || "—"}</div>
-    ${item.url ? `<a class="title-link" href="${item.url}" target="_blank">↗ open</a>` : ""}
-  `;
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "title-text";
+  titleDiv.textContent = item.title || "—";
+  tdTitle.appendChild(titleDiv);
+  if (itemUrl) {
+    const link = document.createElement("a");
+    link.className = "title-link";
+    link.href = itemUrl;
+    link.target = "_blank";
+    link.textContent = "↗ open";
+    tdTitle.appendChild(link);
+  }
 
   // DESC
   const tdDesc = document.createElement("td");
@@ -414,7 +404,7 @@ function renderRow(item, idx) {
   const tdNotes = document.createElement("td");
   const ta = document.createElement("textarea");
   ta.className = "notes"; ta.placeholder = "Add note…"; ta.value = savedNote;
-  ta.oninput = () => localStorage.setItem("note_" + (item.url || idx), ta.value);
+  ta.oninput = () => localStorage.setItem("note_" + (itemUrl || idx), ta.value);
   tdNotes.appendChild(ta);
 
   // COLORS
@@ -473,7 +463,7 @@ function renderRow(item, idx) {
   const tdAction = document.createElement("td");
   const repBtn = document.createElement("button");
   repBtn.className = "reparse-btn"; repBtn.title = "Refresh"; repBtn.textContent = "↻";
-  repBtn.onclick = () => reparseMaterial(item.url, repBtn);
+  repBtn.onclick = () => reparseMaterial(itemUrl, repBtn);
   tdAction.appendChild(repBtn);
 
   tr.append(tdType, tdPhoto, tdTitle, tdDesc, tdNotes, tdColors, tdWeight, tdPrice, tdAction);
@@ -530,10 +520,13 @@ async function addMaterial() {
   btn.disabled = true;
   setStatus("Parsing… this may take 1–2 minutes.", "loading");
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 180000);
     const res = await fetch(`${API}/parse`, {
       method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }), signal: controller.signal
     });
+    clearTimeout(timer);
     if (!res.ok) { const e = await res.json(); throw new Error(e.detail || "Parse failed"); }
     const data = await res.json();
     input.value = "";
@@ -541,7 +534,7 @@ async function addMaterial() {
     setStatus(`✓ Added: ${data.title}`, "");
     setTimeout(clearStatus, 3000);
   } catch(e) {
-    setStatus(`Error: ${e.message}`, "error");
+    setStatus(`Error: ${e.name === "AbortError" ? "Timeout — try again" : e.message}`, "error");
   } finally {
     btn.disabled = false;
   }
@@ -553,16 +546,19 @@ async function reparseMaterial(url, btn) {
   btn.classList.add("spinning");
   setStatus("Refreshing…", "loading");
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 180000);
     const res = await fetch(`${API}/parse`, {
       method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }), signal: controller.signal
     });
+    clearTimeout(timer);
     if (!res.ok) throw new Error("Reparse failed");
     await loadMaterials();
     setStatus("✓ Refreshed", "");
     setTimeout(clearStatus, 2000);
   } catch(e) {
-    setStatus(`Error: ${e.message}`, "error");
+    setStatus(`Error: ${e.name === "AbortError" ? "Timeout — try again" : e.message}`, "error");
   } finally {
     btn.classList.remove("spinning");
   }
@@ -585,6 +581,7 @@ document.getElementById("urlInput").addEventListener("keydown", e => {
   if (e.key === "Enter") addMaterial();
 });
 
+initSortHeaders();
 loadMaterials();
 </script>
 </body>
