@@ -536,7 +536,9 @@ function renderRow(item, idx) {
     colors.forEach((c, i) => {
       const opt = document.createElement("option");
       opt.value = i;
-      opt.textContent = c.name || `Color ${i+1}`;
+      const inStock = !c.availability || c.availability === "In stock";
+      opt.textContent = (c.name || `Color ${i+1}`) + (inStock ? "" : " (out of stock)");
+      if (!inStock) { opt.disabled = true; opt.style.color = "#bbb"; }
       colorSel.appendChild(opt);
     });
 
