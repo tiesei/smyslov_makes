@@ -251,13 +251,29 @@
   }
   .template-edit.is-save:hover { background: #dce8e0; }
 
+  .mobile-templates-strip { display: none; }
+
   @media (max-width: 600px) {
-    .templates-sidebar { display: none; }
-    .mobile-top { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; }
     .templates-sidebar { display: none !important; }
+    .mobile-top {
+      display: flex; gap: 0.5rem; align-items: center;
+      margin-bottom: 0.5rem; padding: 0 0.5rem;
+      justify-content: flex-end;
+    }
+    .mobile-templates-strip {
+      display: flex; gap: 0.5rem; overflow-x: auto;
+      padding: 0 0.5rem 0.5rem; margin-bottom: 0.25rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .mobile-templates-strip::-webkit-scrollbar { display: none; }
+    .mobile-templates-strip .template-card {
+      flex-shrink: 0; width: 120px; min-width: 120px;
+    }
   }
   @media (min-width: 601px) {
     .mobile-top { display: none; }
+    .mobile-templates-strip { display: none !important; }
   }
 </style>
 </head>
@@ -284,6 +300,7 @@
   <span class="field-label">€</span>
   <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">add template</button>
 </div>
+<div class="mobile-templates-strip" id="mobileTemplatesStrip"></div>
 <div class="page-layout">
   <!-- MAIN CALCULATOR -->
   <div class="calc-main">
@@ -852,6 +869,20 @@ function renderTemplates(templates) {
     card.appendChild(editBtn);
     card.onclick = () => loadTemplate(t);
     sidebar.appendChild(card);
+  });
+
+  // Sync mobile horizontal strip
+  const mobileStrip = document.getElementById("mobileTemplatesStrip");
+  mobileStrip.innerHTML = "";
+  templates.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "template-card";
+    const nameEl = document.createElement("div");
+    nameEl.className = "template-name";
+    nameEl.textContent = t.name;
+    card.appendChild(nameEl);
+    card.onclick = () => loadTemplate(t);
+    mobileStrip.appendChild(card);
   });
 }
 
