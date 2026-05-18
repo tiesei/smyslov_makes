@@ -538,9 +538,14 @@ function restoreFromState(state) {
   if (state.qty) document.getElementById("qty").value = state.qty;
   if (state.productIdx !== undefined && state.productIdx !== "") {
     const sel = document.getElementById("productSelect");
-    sel.value = state.productIdx;
-    const idx = parseInt(state.productIdx);
+    // Find product by name first, fall back to index
+    let idx = -1;
+    if (state.productName) {
+      idx = products.findIndex(p => p[headers[0]] === state.productName);
+    }
+    if (idx === -1) idx = parseInt(state.productIdx);
     if (!isNaN(idx) && products[idx]) {
+      sel.value = idx;
       renderPositions(products[idx]);
       document.getElementById("summary").style.display = "block";
     }
@@ -893,7 +898,7 @@ async function deleteTemplate(name) {
 
 function loadTemplate(t) {
   try {
-    const state = typeof t.state === "string" ? JSON.parse(t.state) : t;
+    const state = typeof t.state === "string" ? JSON.parse(t.state) : (t.state || t);
     restoreFromState(state);
   } catch(e) { console.warn("loadTemplate failed", e); }
 }
