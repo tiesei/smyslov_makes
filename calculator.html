@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🧵 things calculator</title>
 <style>
@@ -58,7 +57,7 @@
 
   /* TEMPLATES SIDEBAR */
   .templates-sidebar {
-    width: 160px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.4rem;
+    width: 150px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.5rem;
   }
   .templates-label {
     font-family: var(--mono); font-size: 11px; color: var(--text-muted);
@@ -205,18 +204,58 @@
   .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 13px; }
 
   @media (max-width: 600px) {
-    .page-layout { gap: 0.4rem; padding: 0.4rem; }
-    .templates-sidebar { width: 130px; }
-    .position-thumb-wrap { width: 36px; height: 36px; font-size: 16px; }
-    .position-label { font-size: 10px; width: 110px; }
-    .position-qty { font-size: 10px; min-width: 36px; }
-    .mat-search-input { font-size: 12px; }
-    .mobile-top { display: none !important; }
-    .mobile-templates { display: none !important; }
+    .templates-sidebar { width: 110px; }
+    .position-label { width: auto; }
+    .position-card { font-size: 11px; }
+  }
+
+  
+
+  /* ── INTRO OVERLAY ─────────────────────────────────────────────────────── */
+
+
+  .btn-reset {
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    background: none; color: #c0392b; border: 1px solid #c0392b;
+    border-radius: 6px; padding: 5px 10px; cursor: pointer;
+    white-space: nowrap; transition: background 0.15s, color 0.15s;
+    flex-shrink: 0; height: 32px;
+  }
+  .btn-reset:hover { background: #fdf0ee; }
+
+  .sidebar-rate {
+    display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+  }
+  .rate-input {
+    width: 52px !important;
+  }
+  .btn-new-tmpl {
+    width: 100%; margin-bottom: 0.5rem; font-size: 11px; padding: 0;
+    text-align: center; height: 32px;
+  }
+  .template-edit {
+    display: block; width: 100%; margin: 6px 0 0;
+    background: none; border: none;
+    font-size: 10px; font-family: var(--mono); color: var(--text-muted);
+    cursor: pointer; padding: 0; border-radius: 0;
+    transition: color 0.15s; line-height: 1; text-align: left;
+    height: 32px; text-decoration: underline; text-underline-offset: 2px;
+  }
+  .template-edit:hover { color: var(--text); }
+  .template-edit.is-save {
+    background: var(--accent-light); border: 1px solid var(--border);
+    color: var(--accent); border-radius: 5px;
+    text-decoration: none; text-align: center; font-weight: 500;
+  }
+  .template-edit.is-save:hover { background: #dce8e0; }
+
+  @media (max-width: 600px) {
+    .templates-sidebar { display: none; }
+    .mobile-top { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .templates-sidebar { display: none !important; }
   }
   @media (min-width: 601px) {
-    .mobile-top { display: none !important; }
-    .mobile-templates { display: none !important; }
+    .mobile-top { display: none; }
   }
 </style>
 </head>
@@ -237,7 +276,12 @@
   </div>
 </nav>
 
-
+<div class="mobile-top">
+  <span class="field-label">Rate /hr</span>
+  <input class="field-input" type="number" id="hourlyRateMobile" value="20" min="0" step="1" oninput="document.getElementById('hourlyRate').value=this.value;onAnyChange()">
+  <span class="field-label">€</span>
+  <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">new template</button>
+</div>
 <div class="page-layout">
   <!-- MAIN CALCULATOR -->
   <div class="calc-main">
@@ -715,8 +759,6 @@ async function loadTemplates() {
     renderTemplates(templates);
   } catch(e) { console.warn("loadTemplates failed", e); }
 }
-
-
 
 function renderTemplates(templates) {
   const sidebar = document.getElementById("templatesSidebar");
