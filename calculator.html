@@ -25,7 +25,7 @@
   nav {
     background: var(--surface); border-bottom: 1px solid var(--border);
     padding: 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;
-    height: 44px; position: sticky; top: 0; z-index: 100;
+    height: 60px; position: sticky; top: 0; z-index: 9999;
   }
 
   .nav-brand {
@@ -34,17 +34,17 @@
     padding: 2px 0;
   }
   .nav-brand img {
-    height: 26px; width: auto; display: block;
+    width: 50px; height: auto; display: block;
   }
   .nav-brand-sub {
-    font-family: var(--mono); font-size: 9px; font-weight: 500;
-    color: var(--text-muted); letter-spacing: 0.12em;
-    text-transform: lowercase; line-height: 1; margin-top: 1px;
-    padding-left: 1px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--text-muted); letter-spacing: 0.08em;
+    text-transform: lowercase; line-height: 1; margin-top: 2px;
+    width: 50px; text-align: center;
   }
 
   .nav-links { display: flex; }
-  .nav-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 0 0.6rem; height: 44px; display: flex; align-items: center; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; white-space: nowrap; }
+  .nav-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 0 0.6rem; height: 60px; display: flex; align-items: center; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; white-space: nowrap; }
   .nav-links a:hover { color: var(--text); }
   .nav-links a.active { color: var(--text); border-bottom-color: var(--accent); }
   .nav-end { margin-left: auto; }
@@ -252,6 +252,51 @@
   .glitch-active {
     animation: glitch-flicker 1.6s steps(1) forwards;
   }
+
+  @keyframes nav-glitch {
+    0%   { opacity: 0; transform: translate(0,0); }
+    4%   { opacity: 1; transform: translate(-3px, 0); }
+    5%   { opacity: 0; }
+    9%   { opacity: 0; }
+    10%  { opacity: 1; transform: translate(2px, 1px); }
+    11%  { opacity: 0.2; transform: translate(0,0); }
+    12%  { opacity: 1; }
+    28%  { opacity: 1; transform: translate(0,0); }
+    29%  { opacity: 0.1; transform: translate(-2px,0); }
+    30%  { opacity: 1; transform: translate(0,0); }
+    54%  { opacity: 1; }
+    55%  { opacity: 0; }
+    56%  { opacity: 1; transform: translate(1px,-1px); }
+    57%  { opacity: 1; transform: translate(0,0); }
+    100% { opacity: 1; transform: translate(0,0); }
+  }
+  .nav-brand.glitch-run { animation: nav-glitch 1.8s steps(1) forwards; }
+
+  /* ── INTRO OVERLAY ─────────────────────────────────────────────────────── */
+  #intro-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    pointer-events: none;
+    background: rgba(10, 12, 20, 0.96);
+    -webkit-mask-image: radial-gradient(circle at 40px 30px, transparent 0%, transparent 0%, black 0%);
+    mask-image: radial-gradient(circle at 40px 30px, transparent 0%, transparent 0%, black 0%);
+    transition: none;
+  }
+  #intro-overlay.hidden { display: none; }
+  #intro-overlay.reveal {
+    transition: -webkit-mask-image 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+                mask-image 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-mask-image: radial-gradient(circle at 40px 30px, transparent 55%, rgba(0,0,0,0.0) 60%, black 80%);
+    mask-image: radial-gradient(circle at 40px 30px, transparent 55%, rgba(0,0,0,0.0) 60%, black 80%);
+  }
+
+  .btn-reset {
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    background: none; color: #c0392b; border: 1px solid #c0392b;
+    border-radius: 6px; padding: 5px 12px; cursor: pointer;
+    white-space: nowrap; transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-reset:hover { background: #fdf0ee; }
 </style>
 </head>
 <body>
@@ -263,6 +308,9 @@
     <div id="intro-logo-sub">makes</div>
   </div>
 </div>
+
+<!-- INTRO OVERLAY -->
+<div id="intro-overlay" class="hidden"></div>
 
 <nav>
   <a href="index.html" class="nav-brand">
@@ -302,6 +350,7 @@
       </select>
       <div class="autosave-dot" id="autosaveDot" title="Auto-saved"></div>
       <button class="btn-save-tmpl" onclick="saveTemplate()">Save template</button>
+      <button class="btn-reset" onclick="resetCalc()" title="Reset current selections">Reset</button>
     </div>
 
     <div class="positions" id="positions">
@@ -847,6 +896,16 @@ function loadTemplate(t) {
     const state = typeof t.state === "string" ? JSON.parse(t.state) : t;
     restoreFromState(state);
   } catch(e) { console.warn("loadTemplate failed", e); }
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetCalc() {
+  localStorage.removeItem(AUTO_SAVE_KEY);
+  document.getElementById("qty").value = 1;
+  document.getElementById("hourlyRate").value = 20;
+  document.getElementById("productSelect").value = "";
+  document.getElementById("positions").innerHTML = '<div class="empty-state">Select a product above to start</div>';
+  document.getElementById("summary").style.display = "none";
 }
 
 // ── LOGIN ─────────────────────────────────────────────────────────────────────
