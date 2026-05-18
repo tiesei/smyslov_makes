@@ -895,6 +895,7 @@ function renderTemplates(templates) {
     const editBtn = document.createElement("button");
     editBtn.className = "template-edit";
     editBtn.textContent = activeEditTemplate === t.name ? "save" : "edit";
+    if (activeEditTemplate === t.name) editBtn.classList.add("is-save");
     editBtn.title = activeEditTemplate === t.name ? "Save changes to this template" : "Load and edit this template";
     editBtn.onclick = async (e) => {
       e.stopPropagation();
