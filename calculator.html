@@ -423,6 +423,7 @@ const API = "https://materials-parser-api.onrender.com";
 const AUTO_SAVE_KEY = "calc_autosave";
 let products = [], headers = [], materials = [], isAdmin = false;
 let autosaveTimer = null;
+let activeEditTemplate = null; // name of template currently being edited
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
@@ -851,9 +852,30 @@ function renderTemplates(templates) {
     const card = document.createElement("div");
     card.className = "template-card";
 
-    const name = document.createElement("div");
-    name.className = "template-name";
-    name.textContent = t.name;
+    // Editable name
+    const nameEl = document.createElement("div");
+    nameEl.className = "template-name";
+    nameEl.textContent = t.name;
+    nameEl.contentEditable = "true";
+    nameEl.spellcheck = false;
+    nameEl.onclick = (e) => e.stopPropagation();
+    nameEl.onblur = async () => {
+      const newName = nameEl.textContent.trim();
+      if (!newName || newName === t.name) { nameEl.textContent = t.name; return; }
+      // Rename: delete old, save new
+      try {
+        await fetch(`${API}/templates/${encodeURIComponent(t.name)}`, { method: "DELETE" });
+        const state = collectState();
+        state.productName = newName;
+        await fetch(`${API}/templates`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({...state, productName: newName})
+        });
+        if (activeEditTemplate === t.name) activeEditTemplate = newName;
+        t.name = newName;
+      } catch(e) { nameEl.textContent = t.name; }
+    };
+    nameEl.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); nameEl.blur(); } };
 
     const meta = document.createElement("div");
     meta.className = "template-meta";
@@ -865,12 +887,43 @@ function renderTemplates(templates) {
     del.title = "Delete template";
     del.onclick = async (e) => {
       e.stopPropagation();
+      if (activeEditTemplate === t.name) activeEditTemplate = null;
       await deleteTemplate(t.name);
     };
 
-    card.appendChild(name);
+    // Edit / Save button
+    const editBtn = document.createElement("button");
+    editBtn.className = "template-edit";
+    editBtn.textContent = activeEditTemplate === t.name ? "save" : "edit";
+    editBtn.title = activeEditTemplate === t.name ? "Save changes to this template" : "Load and edit this template";
+    editBtn.onclick = async (e) => {
+      e.stopPropagation();
+      if (activeEditTemplate === t.name) {
+        // Save current state back to this template
+        editBtn.textContent = "…";
+        editBtn.classList.add("saving");
+        const state = collectState();
+        state.productName = t.name;
+        try {
+          await fetch(`${API}/templates`, {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(state)
+          });
+        } catch(err) { console.error("save failed", err); }
+        activeEditTemplate = null;
+        await loadTemplates();
+      } else {
+        // Load template and enter edit mode
+        activeEditTemplate = t.name;
+        loadTemplate(t);
+        await loadTemplates();
+      }
+    };
+
+    card.appendChild(nameEl);
     card.appendChild(meta);
     card.appendChild(del);
+    card.appendChild(editBtn);
     card.onclick = () => loadTemplate(t);
     sidebar.appendChild(card);
   });
