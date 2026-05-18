@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🧵 things calculator</title>
 <style>
@@ -215,10 +216,8 @@
     .thumb { width: 56px; height: 56px; }
   }
 
-  /* ── NAV GLITCH ANIMATION ───────────────────────────────────────────────── */
-  @keyframes nav-glitch {
-    0%   { opacity: 0; transform: translate(0,0); }
-    4%   { opacity: 1; transform: translate(-3px, 0); }
+  
+  
     5%   { opacity: 0; }
     9%   { opacity: 0; }
     10%  { opacity: 1; transform: translate(2px, 1px); }
@@ -234,38 +233,13 @@
     100% { opacity: 1; transform: translate(0,0); }
   }
 
-  .nav-brand.glitch-run {
-    animation: nav-glitch 1.8s steps(1) forwards;
-  }
+  
 
-  /* ── INTRO OVERLAY ─────────────────────────────────────────────────────── */
-  #intro-overlay {
-    position: fixed; inset: 0; z-index: 9998;
-    pointer-events: none;
-    /* radial mask expanding from top-left where logo sits */
-    background: rgba(10, 12, 20, 0.96);
-    -webkit-mask-image: radial-gradient(circle at 40px 30px, transparent 0%, transparent 0%, black 0%);
-    mask-image: radial-gradient(circle at 40px 30px, transparent 0%, transparent 0%, black 0%);
-    transition: none;
-  }
-  #intro-overlay.hidden { display: none; }
-  #intro-overlay.reveal {
-    transition: -webkit-mask-image 1.8s cubic-bezier(0.4, 0, 0.2, 1),
-                mask-image 1.8s cubic-bezier(0.4, 0, 0.2, 1);
-    -webkit-mask-image: radial-gradient(circle at 40px 30px, transparent 55%, rgba(0,0,0,0.0) 60%, black 80%);
-    mask-image: radial-gradient(circle at 40px 30px, transparent 55%, rgba(0,0,0,0.0) 60%, black 80%);
-  }
-  #intro-overlay.reveal-full {
-    -webkit-mask-image: radial-gradient(circle at 40px 30px, transparent 200%, black 201%);
-    mask-image: radial-gradient(circle at 40px 30px, transparent 200%, black 201%);
-  }
+  
 </style>
 </head>
 <body>
 
-
-<!-- INTRO OVERLAY -->
-<div id="intro-overlay" class="hidden"></div>
 
 <nav>
   <a href="index.html" class="nav-brand">
@@ -320,41 +294,7 @@
 </main>
 
 <script>
-// ── INTRO ANIMATION ───────────────────────────────────────────────────────────
-(function() {
-  const VISIT_KEY = "smysl_last_visit";
-  const THRESHOLD = 30 * 60 * 1000;
-  const now = Date.now();
-  const last = parseInt(localStorage.getItem(VISIT_KEY) || "0");
-  localStorage.setItem(VISIT_KEY, now);
 
-  if (now - last > THRESHOLD) {
-    const overlay = document.getElementById("intro-overlay");
-    const brand = document.querySelector(".nav-brand");
-
-    // Show overlay (dark plane, no centered logo)
-    overlay.classList.remove("hidden");
-
-    // Glitch nav brand in place (top-left)
-    if (brand) {
-      brand.style.opacity = "0";
-      setTimeout(() => {
-        brand.style.opacity = "";
-        brand.classList.add("glitch-run");
-      }, 300);
-    }
-
-    // After glitch settles, start radial reveal from logo position
-    setTimeout(() => {
-      overlay.classList.add("reveal");
-    }, 2200);
-
-    // Finish and hide
-    setTimeout(() => {
-      overlay.classList.add("hidden");
-    }, 5000);
-  }
-})();
 
 const API = "https://materials-parser-api.onrender.com";
 const TYPES = ["Fabric", "Foam", "Webbing", "Zipper", "Furniture", "Binding"];
