@@ -20,6 +20,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { max-width: 100vw; overflow-x: hidden; }
   body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
 
   nav {
@@ -51,12 +52,12 @@
   .sign-in-btn { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; color: var(--text-muted); font-family: var(--sans); }
 
   /* LAYOUT: sidebar for templates */
-  .page-layout { display: flex; gap: 0.75rem; padding: 0.75rem; align-items: flex-start; }
-  .calc-main { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; max-width: 860px; }
+  .page-layout { display: flex; gap: 0.75rem; padding: 0.75rem; align-items: flex-start; min-width: 0; }
+  .calc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.75rem; }
 
   /* TEMPLATES SIDEBAR */
   .templates-sidebar {
-    width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.5rem;
+    width: 150px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.5rem;
   }
   .templates-label {
     font-family: var(--mono); font-size: 11px; color: var(--text-muted);
@@ -126,7 +127,7 @@
 
   .position-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 0.65rem 0.75rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    padding: 0.65rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; min-width: 0;
   }
   .position-label {
     font-family: var(--mono); font-size: 11px; color: var(--text-muted);
@@ -202,8 +203,7 @@
   .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 13px; }
 
   @media (max-width: 800px) {
-    .page-layout { flex-direction: column; }
-    .templates-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .templates-sidebar { width: 120px; }
     .position-label { width: 100%; }
   }
 
