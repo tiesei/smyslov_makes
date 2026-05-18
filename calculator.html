@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🧵 things calculator</title>
+<title>thing constructor</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -111,7 +112,7 @@
     background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
   }
   .btn-save-tmpl {
-    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    font-family: var(--sans); font-size: 11px; font-weight: 500;
     background: var(--accent-light); color: var(--accent); border: 1px solid var(--border);
     border-radius: 6px; padding: 0 12px; cursor: pointer; white-space: nowrap;
     transition: background 0.15s; flex-shrink: 0; height: 32px;
@@ -225,6 +226,7 @@
 
   .sidebar-rate {
     display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+    padding: 0 2px;
   }
   .rate-input {
     width: 52px !important;
@@ -236,7 +238,7 @@
   .template-edit {
     display: block; width: 100%; margin: 6px 0 0;
     background: none; border: none;
-    font-size: 10px; font-family: var(--mono); color: var(--text-muted);
+    font-size: 11px; font-family: var(--mono); color: var(--text-muted);
     cursor: pointer; padding: 0; border-radius: 0;
     transition: color 0.15s; line-height: 1; text-align: left;
     height: 32px; text-decoration: underline; text-underline-offset: 2px;
@@ -280,7 +282,7 @@
   <span class="field-label">Rate /hr</span>
   <input class="field-input" type="number" id="hourlyRateMobile" value="20" min="0" step="1" oninput="document.getElementById('hourlyRate').value=this.value;onAnyChange()">
   <span class="field-label">€</span>
-  <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">new template</button>
+  <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">add template</button>
 </div>
 <div class="page-layout">
   <!-- MAIN CALCULATOR -->
@@ -333,7 +335,7 @@
       <input class="field-input rate-input" type="number" id="hourlyRate" value="20" min="0" step="1" oninput="onAnyChange()">
       <span class="field-label">€</span>
     </div>
-    <button class="btn-save-tmpl btn-new-tmpl" onclick="saveTemplate()">new template</button>
+    <button class="btn-save-tmpl btn-new-tmpl" onclick="saveTemplate()">add template</button>
     <div class="templates-label">Templates</div>
     <div class="templates-empty" id="templatesEmpty">No saved templates</div>
   </div>
