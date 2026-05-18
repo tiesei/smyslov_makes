@@ -216,11 +216,33 @@
   .btn-reset {
     font-family: var(--sans); font-size: 12px; font-weight: 500;
     background: none; color: #c0392b; border: 1px solid #c0392b;
-    border-radius: 6px; padding: 5px 12px; cursor: pointer;
+    border-radius: 6px; padding: 5px 10px; cursor: pointer;
     white-space: nowrap; transition: background 0.15s, color 0.15s;
     flex-shrink: 0;
   }
   .btn-reset:hover { background: #fdf0ee; }
+
+  .sidebar-rate {
+    display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+  }
+  .rate-input {
+    width: 52px !important;
+  }
+  .btn-new-tmpl {
+    width: 100%; margin-bottom: 0.5rem; font-size: 11px; padding: 5px 0;
+    text-align: center;
+  }
+  .template-edit {
+    display: block; width: 100%; margin: 6px 0 0;
+    background: none; border: none;
+    font-size: 10px; font-family: var(--mono); color: var(--text-muted);
+    cursor: pointer; padding: 2px 0; border-radius: 4px;
+    transition: all 0.15s; line-height: 1.6; text-align: center;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .template-edit:hover { color: var(--text); }
+  .template-edit.is-save { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .template-edit.is-save:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -243,30 +265,17 @@
 <div class="page-layout">
   <!-- MAIN CALCULATOR -->
   <div class="calc-main">
-    <div class="top-bar">
-      <div class="field-group">
-        <span class="field-label">Rate /hr</span>
-        <input class="field-input" type="number" id="hourlyRate" value="20" min="0" step="1" oninput="onAnyChange()">
-        <span class="field-label">EUR</span>
-      </div>
-      <div class="field-group admin-only" id="markupField">
-        <span class="field-label">Markup</span>
-        <input class="field-input" type="number" id="markupPct" value="30" min="0" step="5" oninput="onAnyChange()">
-        <span class="field-label">%</span>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
-        <button class="btn-save-tmpl" onclick="saveTemplate()">blues template</button>
-        <button class="btn-reset" onclick="resetCalc()">Reset</button>
-      </div>
-    </div>
-
     <div class="product-bar">
       <input class="qty-input" type="number" id="qty" value="1" min="1" step="1" oninput="onAnyChange()">
       <select class="product-select" id="productSelect" onchange="onProductChange()">
         <option value="">— select product —</option>
       </select>
-      <div class="autosave-dot" id="autosaveDot" title="Auto-saved"></div>
-
+      <button class="btn-reset" onclick="resetCalc()">Reset</button>
+    </div>
+    <div class="field-group admin-only" id="markupField" style="padding:0.4rem 0;">
+      <span class="field-label">Markup</span>
+      <input class="field-input" type="number" id="markupPct" value="30" min="0" step="5" oninput="onAnyChange()">
+      <span class="field-label">%</span>
     </div>
 
     <div class="positions" id="positions">
@@ -299,6 +308,12 @@
 
   <!-- TEMPLATES SIDEBAR -->
   <div class="templates-sidebar" id="templatesSidebar">
+    <div class="sidebar-rate">
+      <span class="field-label">Rate /hr</span>
+      <input class="field-input rate-input" type="number" id="hourlyRate" value="20" min="0" step="1" oninput="onAnyChange()">
+      <span class="field-label">€</span>
+    </div>
+    <button class="btn-save-tmpl btn-new-tmpl" onclick="saveTemplate()">new template</button>
     <div class="templates-label">Templates</div>
     <div class="templates-empty" id="templatesEmpty">No saved templates</div>
   </div>
