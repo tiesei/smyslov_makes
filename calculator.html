@@ -302,14 +302,6 @@
 <body>
 
 <!-- INTRO OVERLAY -->
-<div id="intro-overlay" class="hidden">
-  <div id="intro-logo">
-    <img src="logo.png" alt="smysl makes">
-    <div id="intro-logo-sub">makes</div>
-  </div>
-</div>
-
-<!-- INTRO OVERLAY -->
 <div id="intro-overlay" class="hidden"></div>
 
 <nav>
@@ -399,23 +391,14 @@
 
   if (now - last > THRESHOLD) {
     const overlay = document.getElementById("intro-overlay");
-    const logo = document.getElementById("intro-logo");
+    const brand = document.querySelector(".nav-brand");
     overlay.classList.remove("hidden");
-
-    // Start glitch after short delay
-    setTimeout(() => {
-      logo.classList.add("glitch-active");
-    }, 200);
-
-    // Fade out overlay after animation
-    setTimeout(() => {
-      overlay.classList.add("fade-out");
-    }, 2200);
-
-    // Remove overlay fully
-    setTimeout(() => {
-      overlay.classList.add("hidden");
-    }, 3500);
+    if (brand) {
+      brand.style.opacity = "0";
+      setTimeout(() => { brand.style.opacity = ""; brand.classList.add("glitch-run"); }, 300);
+    }
+    setTimeout(() => { overlay.classList.add("reveal"); }, 2200);
+    setTimeout(() => { overlay.classList.add("hidden"); }, 5000);
   }
 })();
 
