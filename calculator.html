@@ -482,8 +482,6 @@ function loadFromCache() {
       if (typeof m.variants === "string") { try { m.variants = JSON.parse(m.variants); } catch { m.variants = []; } }
     });
   }
-  const ct = cacheGet("templates");
-  if (ct) renderTemplates(ct);
   const cf = cacheGet("features");
   if (cf) featuresData = { headers: cf.headers || [], features: cf.features || [] };
   return !!(cp && cm);
@@ -493,7 +491,9 @@ async function init() {
   const hasCached = loadFromCache();
   const raw = localStorage.getItem(AUTO_SAVE_KEY);
   if (hasCached && raw) { try { restoreFromState(JSON.parse(raw)); } catch(e) {} }
-  await Promise.all([loadProducts(), loadMaterials(), loadTemplates(), loadFeaturesData()]);
+  // Templates always fresh (change often), rest only if no cache
+  await loadTemplates();
+  if (!hasCached) await Promise.all([loadProducts(), loadMaterials(), loadFeaturesData()]);
 }
 
 async function loadProducts() {
