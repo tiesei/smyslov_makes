@@ -182,7 +182,7 @@
     font-family: var(--mono); font-size: 11.5px; color: var(--text-muted);
     white-space: nowrap; flex-shrink: 0;
   }
-  .position-selects { display: contents; }
+  .position-selects { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .position-price {
     font-family: var(--mono); font-size: 12px; text-align: right;
     white-space: nowrap; color: var(--text);
@@ -214,7 +214,7 @@
   .mat-option:hover, .mat-option.selected { background: var(--accent-light); }
   .mat-option.no-results { color: var(--text-muted); font-size: 12px; cursor: default; }
 
-  select.color-select {
+  select.color-select, select.opt-select {
     font-family: var(--sans); font-size: 13px; background: var(--bg);
     border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px;
     color: var(--text); outline: none; cursor: pointer; appearance: none;
@@ -753,9 +753,9 @@ function renderPositions(product) {
     qtyEl.textContent = `× ${posQty} ${unit}`;
 
     const img = document.createElement("img");
-    img.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;";
-    img.onload = () => { img.classList.add("loaded"); img.style.display = "block"; if(img.nextElementSibling) img.nextElementSibling.style.display = "none"; };
-    img.onerror = () => { img.classList.remove("loaded"); img.style.display = "none"; if(img.nextElementSibling) img.nextElementSibling.style.display = ""; };
+    img.onload = () => { img.classList.add("loaded"); img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;"; }
+    img.onerror = () => img.classList.remove("loaded");
+    img.style.display = "none";
     const placeholder = document.createElement("span");
     placeholder.className = "thumb-placeholder";
     const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
@@ -799,6 +799,10 @@ function renderPositions(product) {
     colorSel.innerHTML = '<option value="">— color —</option>';
     colorSel.classList.add("sel-hidden");
 
+    const optSel = document.createElement("select");
+    optSel.className = "opt-select";
+    optSel.innerHTML = '<option value="">— option —</option>';
+    optSel.classList.add("sel-hidden");
 
     function buildOptions(query) {
       optionsContainer.innerHTML = "";
@@ -852,10 +856,13 @@ function renderPositions(product) {
       updateColorSelectStyle(colorSel, mat);
       onAnyChange();
     };
+    optSel.onchange = onAnyChange;
+
     matWrap.appendChild(matInput);
     matWrap.appendChild(matList);
     selects.appendChild(matWrap);
     selects.appendChild(colorSel);
+    selects.appendChild(optSel);
 
     // Thumb column
     const thumbCol = document.createElement("div");
@@ -906,6 +913,8 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
   colorSel.innerHTML = '<option value="">— color —</option>';
   colorSel.classList.add("sel-hidden");
+  optSel.innerHTML = '<option value="">— option —</option>';
+  optSel.classList.add("sel-hidden");
   img.classList.remove("loaded"); img.src = "";
   priceEl.textContent = "—"; priceEl.className = "position-price na";
   if (!mat) return;
@@ -926,7 +935,14 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
     updateColorSelectStyle(colorSel, mat);
   }
 
-
+  const variants = mat.variants || [];
+  if (variants.length > 0 && variants[0].options?.length > 0) {
+    variants[0].options.forEach(o => {
+      const opt = document.createElement("option");
+      opt.value = o; opt.textContent = o; optSel.appendChild(opt);
+    });
+    optSel.classList.remove("sel-hidden");
+  }
 }
 
 // ── RECALC ────────────────────────────────────────────────────────────────────
@@ -1119,9 +1135,8 @@ function addFeatureCard(feat) {
     const thumbWrap = document.createElement("div");
     thumbWrap.className = "position-thumb-wrap";
     const img = document.createElement("img");
-    img.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;";
-    img.onload = () => { img.classList.add("loaded"); img.style.display = "block"; if(img.nextElementSibling) img.nextElementSibling.style.display = "none"; };
-    img.onerror = () => { img.classList.remove("loaded"); img.style.display = "none"; if(img.nextElementSibling) img.nextElementSibling.style.display = ""; };
+    img.onload = () => img.classList.add("loaded");
+    img.onerror = () => img.classList.remove("loaded");
     const placeholder = document.createElement("span");
     placeholder.className = "thumb-placeholder";
     const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
@@ -1152,6 +1167,10 @@ function addFeatureCard(feat) {
     const colorSel = document.createElement("select");
     colorSel.className = "color-select";
     colorSel.innerHTML = '<option value="">— color —</option>';
+    const optSel = document.createElement("select");
+    optSel.className = "opt-select";
+    optSel.innerHTML = '<option value="">— option —</option>';
+    optSel.classList.add("sel-hidden");
 
     function buildOptions(query) {
       optionsContainer.innerHTML = "";
@@ -1203,8 +1222,10 @@ function addFeatureCard(feat) {
       updateColorSelectStyle(colorSel, mat);
       onAnyChange();
     };
+    optSel.onchange = onAnyChange;
+
     matWrap.appendChild(matInput); matWrap.appendChild(matList);
-    selects.appendChild(matWrap); selects.appendChild(colorSel);
+    selects.appendChild(matWrap); selects.appendChild(colorSel); selects.appendChild(optSel);
     // thumb column
     const thumbCol2 = document.createElement("div");
     thumbCol2.className = "position-card-thumb-col";
