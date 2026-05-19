@@ -476,11 +476,13 @@ async function init() {
 }
 
 async function loadProducts() {
+  const cached = cacheGet("products");
+  if (cached) { headers = cached.headers || []; products = cached.products || []; populateProductSelect(); }
   try {
-    const res = await fetch(`${API}/products`);
+    const res = await apiFetch(`${API}/products`);
     const data = await res.json();
-    headers = data.headers || [];
-    products = data.products || [];
+    headers = data.headers || []; products = data.products || [];
+    cacheSet("products", data);
     populateProductSelect();
   } catch(e) { console.error("loadProducts failed", e); }
 }
@@ -1144,10 +1146,13 @@ function updateColorSelectStyle(colorSel, mat) {
 
 // ── TEMPLATES ─────────────────────────────────────────────────────────────────
 async function loadTemplates() {
+  const cached = cacheGet("templates");
+  if (cached) renderTemplates(cached);
   try {
-    const res = await fetch(`${API}/templates`);
+    const res = await apiFetch(`${API}/templates`);
     if (!res.ok) return;
     const templates = await res.json();
+    cacheSet("templates", templates);
     renderTemplates(templates);
   } catch(e) { console.warn("loadTemplates failed", e); }
 }
@@ -1227,12 +1232,12 @@ function renderTemplates(templates) {
           });
         } catch(err) { console.error("save failed", err); }
         activeEditTemplate = null;
-        await loadTemplates();
+        cacheInvalidate("templates"); await loadTemplates();
       } else {
         // Load template and enter edit mode
         activeEditTemplate = t.name;
         loadTemplate(t);
-        await loadTemplates();
+        cacheInvalidate("templates"); await loadTemplates();
       }
     };
 
@@ -1268,14 +1273,14 @@ async function saveTemplate() {
       body: JSON.stringify(state)
     });
     if (!res.ok) throw new Error("Save failed");
-    await loadTemplates();
+    cacheInvalidate("templates"); await loadTemplates();
   } catch(e) { console.error("saveTemplate failed", e); }
 }
 
 async function deleteTemplate(name) {
   try {
     await fetch(`${API}/templates/${encodeURIComponent(name)}`, { method: "DELETE" });
-    await loadTemplates();
+    cacheInvalidate("templates"); await loadTemplates();
   } catch(e) { console.error("deleteTemplate failed", e); }
 }
 
