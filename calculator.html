@@ -926,7 +926,187 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   }
 }
 
+// ── OUT OF STOCK ──────────────────────────────────────────────────────────────
+function updateColorSelectStyle(colorSel, mat) {
+  const ci = parseInt(colorSel.value);
+  const color = !isNaN(ci) ? (mat?.colors || [])[ci] : null;
+  const inStock = !color || !color.availability || color.availability === "In stock";
+  colorSel.classList.toggle("out-of-stock", !inStock);
+}
+
+// ── RECALC ────────────────────────────────────────────────────────────────────
 function recalc() {
   const qty = parseInt(document.getElementById("qty").value) || 1;
   const rate = parseFloat(document.getElementById("hourlyRate").value) || 0;
-  const idx = parseInt(document
+  const idx = parseInt(document.getElementById("productSelect").value);
+  const product = isNaN(idx) ? null : products[idx];
+  const hoursHeader = headers.find(h => h.toLowerCase().includes("working") || h.toLowerCase().includes("hours")) || headers[headers.length - 1];
+  const hours = product ? parseFloat((product[hoursHeader] || "0").replace(",", ".")) : 0;
+
+  let matTotal = 0;
+  document.querySelectorAll(".position-card").forEach(card => {
+    const posQty = parseFloat(card.dataset.qty || "0");
+    const matInput = card.querySelector(".mat-search-input");
+    const colorSel = card.querySelector(".color-select");
+    const mi = parseInt(matInput?.dataset.selectedIdx);
+    const mat = isNaN(mi) ? null : materials[mi];
+    const priceEl = card.querySelector(".position-price");
+    let price = 0;
+    if (mat) {
+      const ci = parseInt(colorSel?.value);
+      const color = !isNaN(ci) ? (mat.colors || [])[ci] : null;
+      price = color?.price_per_unit || parsePrice(mat.price || "");
+    }
+    const lineTotal = price * posQty * qty;
+    matTotal += lineTotal;
+    if (priceEl) {
+      priceEl.textContent = mat && price ? `${lineTotal.toFixed(2)} EUR` : "—";
+      priceEl.className = "position-price" + (mat && price ? "" : " na");
+    }
+  });
+
+  const labourTotal = hours * rate * qty;
+  const costTotal = matTotal + labourTotal;
+
+  document.getElementById("sumMaterials").textContent = `${matTotal.toFixed(2)} EUR`;
+  document.getElementById("sumLabour").textContent = `${labourTotal.toFixed(2)} EUR`;
+  document.getElementById("sumTotal").textContent = `${costTotal.toFixed(2)} EUR`;
+}
+
+function parsePrice(str) {
+  if (!str) return 0;
+  const m = str.replace(",", ".").match(/[\d.]+/);
+  return m ? parseFloat(m[0]) : 0;
+}
+
+// ── TEMPLATES ─────────────────────────────────────────────────────────────────
+async function loadTemplates() {
+  const cached = cacheGet("templates");
+  if (cached) renderTemplates(cached);
+  try {
+    const res = await apiFetch(`${API}/templates`);
+    if (!res.ok) return;
+    const templates = await res.json();
+    cacheSet("templates", templates);
+    renderTemplates(templates);
+  } catch(e) { console.warn("loadTemplates failed", e); }
+}
+
+function renderTemplates(templates) {
+  const sidebar = document.getElementById("templatesSidebar");
+  const empty = document.getElementById("templatesEmpty");
+  sidebar.querySelectorAll(".template-card").forEach(el => el.remove());
+  if (!templates || templates.length === 0) { empty.style.display = ""; return; }
+  empty.style.display = "none";
+
+  templates.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "template-card";
+
+    const name = document.createElement("div");
+    name.className = "template-name";
+    name.textContent = t.name;
+
+    const del = document.createElement("button");
+    del.className = "template-delete";
+    del.textContent = "×";
+    del.title = "Delete";
+    del.onclick = async (e) => {
+      e.stopPropagation();
+      del.textContent = "…";
+      del.disabled = true;
+      await deleteTemplate(t.name);
+    };
+
+    const actions = document.createElement("div");
+    actions.className = "template-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "tmpl-icon-btn";
+    editBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    editBtn.title = "Load & edit";
+    editBtn.onclick = (e) => { e.stopPropagation(); loadTemplate(t); };
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "tmpl-icon-btn";
+    saveBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+    saveBtn.title = "Save current state";
+    saveBtn.onclick = async (e) => {
+      e.stopPropagation();
+      saveBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+      saveBtn.disabled = true;
+      const state = collectState();
+      state.name = t.name;
+      try {
+        await apiFetch(`${API}/templates`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(state)
+        });
+      } catch(err) { console.error("save failed", err); }
+      cacheInvalidate("templates");
+      await loadTemplates();
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(saveBtn);
+    card.appendChild(name);
+    card.appendChild(del);
+    card.appendChild(actions);
+    card.onclick = () => loadTemplate(t);
+    sidebar.appendChild(card);
+  });
+}
+
+async function saveTemplate() {
+  const btn = document.querySelector(".btn-new-tmpl");
+  const origText = btn ? btn.textContent : "";
+  if (btn) { btn.textContent = "saving…"; btn.disabled = true; }
+  const state = collectState();
+  if (!state.productName) {
+    alert("Select a product first");
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+    return;
+  }
+  try {
+    await apiFetch(`${API}/templates`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(state)
+    });
+    cacheInvalidate("templates");
+    await loadTemplates();
+  } catch(e) { console.error("saveTemplate failed", e); }
+  if (btn) { btn.textContent = "saved ✓"; setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 1500); }
+}
+
+async function deleteTemplate(name) {
+  try {
+    await apiFetch(`${API}/templates/${encodeURIComponent(name)}`, { method: "DELETE" });
+    cacheInvalidate("templates");
+    await loadTemplates();
+  } catch(e) { console.error("deleteTemplate failed", e); }
+}
+
+function loadTemplate(t) {
+  try {
+    const state = typeof t.state === "string" ? JSON.parse(t.state) : t;
+    restoreFromState(state);
+  } catch(e) { console.warn("loadTemplate failed", e); }
+}
+
+// ── FEATURES ──────────────────────────────────────────────────────────────────
+function toggleFeatDropdown() {}
+function buildFeatOptions(q) {}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function handleLogin() {
+  isAdmin = !isAdmin;
+  document.body.classList.toggle("is-admin", isAdmin);
+  document.getElementById("loginBtn").textContent = isAdmin ? "sign out" : "sign in";
+  recalc();
+}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
