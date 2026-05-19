@@ -891,11 +891,10 @@ function renderPositions(product) {
 
 function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
-  if (!colorSel || !optSel) return;
+  if (!colorSel) return;
   colorSel.innerHTML = '<option value="">— color —</option>';
   colorSel.classList.add("sel-hidden");
-  optSel.innerHTML = '<option value="">— option —</option>';
-  optSel.classList.add("sel-hidden");
+  if (optSel) { optSel.innerHTML = '<option value="">— option —</option>'; optSel.classList.add("sel-hidden"); }
   if (img) { img.classList.remove("loaded"); img.src = ""; }
   if (priceEl) { priceEl.textContent = "—"; priceEl.className = "position-price na"; }
   if (!mat) return;
@@ -914,15 +913,6 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
     colorSel.value = 0;
     if (colors[0]?.image && img) img.src = colors[0].image;
     updateColorSelectStyle(colorSel, mat);
-  }
-
-  const variants = mat.variants || [];
-  if (variants.length > 0 && variants[0].options?.length > 0) {
-    variants[0].options.forEach(o => {
-      const opt = document.createElement("option");
-      opt.value = o; opt.textContent = o; optSel.appendChild(opt);
-    });
-    optSel.classList.remove("sel-hidden");
   }
 }
 
@@ -1231,7 +1221,8 @@ function addFeatureCard(feat) {
     matList.appendChild(optionsContainer);
 
     const colorSel = document.createElement("select");
-    colorSel.className = "color-select sel-hidden";
+    colorSel.className = "color-select";
+    colorSel.classList.add("sel-hidden");
     colorSel.innerHTML = '<option value="">— color —</option>';
 
     function buildOptions(query) {
