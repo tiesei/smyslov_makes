@@ -139,44 +139,56 @@
   .positions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
   @media (max-width: 700px) { .positions { grid-template-columns: 1fr; } }
 
+  /* ── POSITION CARD ── */
   .position-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 0; display: flex; align-items: stretch; min-width: 0;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    grid-template-rows: 1fr;
+    min-height: 110px; overflow: hidden;
   }
   .position-card-thumb-col {
-    flex-shrink: 0; width: 90px; min-height: 120px;
+    grid-column: 1; grid-row: 1;
     background: var(--bg); border-right: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
-    font-size: 30px; overflow: hidden; position: relative; border-radius: 10px 0 0 10px;
+    font-size: 28px; overflow: hidden; position: relative;
   }
+  .position-card-thumb-col img {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .thumb-placeholder { font-size: 28px; line-height: 1; }
+  .position-thumb-wrap { display: none; }
+
   .position-card-content {
-    flex: 1; min-width: 0; padding: 0.5rem 0.6rem;
-    display: flex; flex-direction: column; gap: 0.3rem; justify-content: space-between;
+    grid-column: 2; grid-row: 1;
+    padding: 0.5rem 0.6rem;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 4px; min-width: 0;
   }
   .position-card-top {
-    display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; min-width: 0;
-  }
-  .position-card-meta { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
-  .position-price {
-    font-family: var(--mono); font-size: 12px; text-align: right;
-    white-space: nowrap; flex-shrink: 0; color: var(--text); align-self: flex-end;
-  }
-  .position-price.na { color: var(--text-muted); }
-  .position-card-bottom {
-    display: flex; flex-direction: column; gap: 4px; min-width: 0;
+    display: flex; align-items: center; gap: 0.3rem; min-width: 0;
   }
   .position-label {
     font-family: var(--mono); font-size: 10px; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .position-qty {
     font-family: var(--mono); font-size: 10px; color: var(--text-muted);
     white-space: nowrap; flex-shrink: 0;
   }
-
-  .position-thumb-wrap { display: none; }
-  .position-card-thumb-col img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-  .thumb-placeholder { font-size: 30px; line-height: 1; }
+  .position-card-bottom {
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
+  }
+  .position-price-row {
+    display: flex; justify-content: flex-end;
+  }
+  .position-price {
+    font-family: var(--mono); font-size: 12px; text-align: right;
+    white-space: nowrap; color: var(--text);
+  }
+  .position-price.na { color: var(--text-muted); }
 
   .position-selects { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 
@@ -817,33 +829,35 @@ function renderPositions(product) {
     selects.appendChild(colorSel);
     selects.appendChild(optSel);
 
-    // Thumb column (left, full height)
+    // Thumb column
     const thumbCol = document.createElement("div");
     thumbCol.className = "position-card-thumb-col";
     thumbCol.appendChild(img);
     thumbCol.appendChild(placeholder);
 
-    // Content column (right)
+    // Content column
     const content = document.createElement("div");
     content.className = "position-card-content";
 
-    // Top: label + qty
+    // Row 1: label + qty
     const cardTop = document.createElement("div");
     cardTop.className = "position-card-top";
-    const cardMeta = document.createElement("div");
-    cardMeta.className = "position-card-meta";
-    cardMeta.appendChild(label);
-    cardMeta.appendChild(qtyEl);
-    cardTop.appendChild(cardMeta);
+    cardTop.appendChild(label);
+    cardTop.appendChild(qtyEl);
 
-    // Bottom: selects + price
+    // Row 2: selects
     const cardBottom = document.createElement("div");
     cardBottom.className = "position-card-bottom";
     cardBottom.appendChild(selects);
-    cardBottom.appendChild(priceEl);
+
+    // Row 3: price
+    const priceRow = document.createElement("div");
+    priceRow.className = "position-price-row";
+    priceRow.appendChild(priceEl);
 
     content.appendChild(cardTop);
     content.appendChild(cardBottom);
+    content.appendChild(priceRow);
 
     card.appendChild(thumbCol);
     card.appendChild(content);
