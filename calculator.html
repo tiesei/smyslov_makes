@@ -386,7 +386,7 @@
   <div class="nav-links">
     <a href="index.html">Materials</a>
     <a href="products.html">Products</a>
-    <a href="calculator.html" class="active">Calculator</a>
+    <a href="calculator.html" class="active">Cost</a>
   </div>
   <div class="nav-end">
     <button class="sign-in-btn" id="loginBtn" onclick="handleLogin()">sign in</button>
@@ -1067,6 +1067,7 @@ async function saveTemplate() {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
     return;
   }
+  state.name = state.productName;
   try {
     await apiFetch(`${API}/templates`, {
       method: "POST", headers: {"Content-Type":"application/json"},
