@@ -88,8 +88,10 @@
 
   body { overflow-x: hidden; }
 
-  table { width: auto; min-width: 0; border-collapse: collapse; table-layout: fixed; }
-  thead { background: var(--bg); }
+  table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; }
+  thead { background: var(--bg); overflow: visible; }
+  thead tr { overflow: visible; }
+  table { overflow: visible; }
 
   th {
     font-family: var(--mono);
@@ -101,41 +103,49 @@
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     position: relative;
-    width: 90px;
+    width: 72px;
+    padding: 0;
   }
-  th:first-child { width: 140px; }
+  th:first-child { width: 130px; }
+  th.th-add { width: 28px; }
+  th.th-del { width: 20px; }
+
+  /* Controls float above header on hover */
+  .th-controls {
+    display: none;
+    position: absolute;
+    top: -22px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 2px;
+    flex-direction: row; gap: 1px; align-items: center;
+    white-space: nowrap; z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  th:hover .th-controls { display: flex; }
 
   .th-inner {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 2px;
-    padding: 3px 6px;
+    padding: 4px 6px;
+    display: flex; align-items: center; justify-content: flex-end;
   }
+  th:first-child .th-inner { justify-content: flex-start; }
 
-  .th-left { display: flex; gap: 1px; align-items: center; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
-  .th-right { display: flex; gap: 1px; align-items: center; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; justify-content: flex-end; }
-  th:hover .th-left, th:hover .th-right { opacity: 1; }
-
-  .th-name { outline: none; cursor: text; white-space: nowrap; text-align: center; }
-  th:first-child .th-name { text-align: left; }
-  th:not(:first-child) .th-name { text-align: right; }
+  .th-name { outline: none; cursor: text; white-space: nowrap; }
   .th-name:focus { color: var(--text); }
 
-  .col-btn { font-size: 10px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1px 3px; border-radius: 2px; line-height: 1; transition: color 0.1s, background 0.1s; }
+  .col-btn { font-size: 9px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1px 3px; border-radius: 2px; line-height: 1; transition: color 0.1s, background 0.1s; }
   .col-btn:hover { color: var(--text); background: var(--border); }
   .col-btn.del:hover { color: #8b3a2a; }
 
-  th.th-add { width: 28px; padding: 0; }
   .th-add-btn { width: 100%; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px 6px; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
   .th-add-btn:hover { color: var(--accent); }
-  th.th-del { width: 24px; }
 
-  td { padding: 2px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; }
+  /* Zebra rows, no borders */
+  td { padding: 2px 8px; border-bottom: none; vertical-align: middle; font-size: 13px; outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.7; }
   td:focus { background: #fff !important; box-shadow: inset 0 0 0 1px var(--accent); border-radius: 2px; white-space: normal; overflow: visible; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #f5f3ef; }
-  tr.add-row-tr:hover td { background: transparent; }
+  tbody tr:nth-child(odd):not(.add-row-tr) td { background: var(--surface); }
+  tbody tr:nth-child(even):not(.add-row-tr) td { background: #f4f1ec; }
+  tr:hover td { background: #ede9e2 !important; }
+  tr.add-row-tr td { background: transparent !important; }
 
   td.name-cell { font-weight: 500; white-space: nowrap; text-align: left; }
   td.num-cell { font-family: var(--mono); font-size: 12px; text-align: right; }
@@ -290,22 +300,31 @@ function buildBody(rows, hdrs, table) {
 
 function makeColHeader(h, ci, total, table) {
   const th = document.createElement("th");
-  const inner = document.createElement("div");
-  inner.className = "th-inner";
-  const left = document.createElement("div");
-  left.className = "th-left";
+
+  // Floating controls above
+  const controls = document.createElement("div");
+  controls.className = "th-controls";
   if (ci > 0) {
     const ml = document.createElement("button");
     ml.className = "col-btn"; ml.textContent = "←"; ml.title = "Move left";
     ml.onclick = e => { e.stopPropagation(); moveCol(ci, -1, table); };
-    left.appendChild(ml);
+    controls.appendChild(ml);
   }
   if (ci < total - 1) {
     const mr = document.createElement("button");
     mr.className = "col-btn"; mr.textContent = "→"; mr.title = "Move right";
     mr.onclick = e => { e.stopPropagation(); moveCol(ci, 1, table); };
-    left.appendChild(mr);
+    controls.appendChild(mr);
   }
+  if (ci > 0) {
+    const dc = document.createElement("button");
+    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
+    dc.onclick = e => { e.stopPropagation(); deleteColumn(ci, table); };
+    controls.appendChild(dc);
+  }
+
+  const inner = document.createElement("div");
+  inner.className = "th-inner";
   const name = document.createElement("span");
   name.className = "th-name";
   name.contentEditable = "true";
@@ -316,15 +335,9 @@ function makeColHeader(h, ci, total, table) {
     else { featHeaders[ci] = name.textContent.trim() || h; scheduleFeatSave(); }
   };
   name.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); name.blur(); } };
-  const right = document.createElement("div");
-  right.className = "th-right";
-  if (ci > 0) {
-    const dc = document.createElement("button");
-    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
-    dc.onclick = e => { e.stopPropagation(); deleteColumn(ci, table); };
-    right.appendChild(dc);
-  }
-  inner.appendChild(left); inner.appendChild(name); inner.appendChild(right);
+  inner.appendChild(name);
+
+  th.appendChild(controls);
   th.appendChild(inner);
   return th;
 }
