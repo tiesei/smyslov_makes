@@ -214,7 +214,7 @@
   .mat-option:hover, .mat-option.selected { background: var(--accent-light); }
   .mat-option.no-results { color: var(--text-muted); font-size: 12px; cursor: default; }
 
-  select.color-select, select.opt-select {
+  select.color-select {
     font-family: var(--sans); font-size: 13px; background: var(--bg);
     border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px;
     color: var(--text); outline: none; cursor: pointer; appearance: none;
@@ -799,10 +799,6 @@ function renderPositions(product) {
     colorSel.innerHTML = '<option value="">— color —</option>';
     colorSel.classList.add("sel-hidden");
 
-    const optSel = document.createElement("select");
-    optSel.className = "opt-select";
-    optSel.innerHTML = '<option value="">— option —</option>';
-    optSel.classList.add("sel-hidden");
 
     function buildOptions(query) {
       optionsContainer.innerHTML = "";
@@ -856,13 +852,10 @@ function renderPositions(product) {
       updateColorSelectStyle(colorSel, mat);
       onAnyChange();
     };
-    optSel.onchange = onAnyChange;
-
     matWrap.appendChild(matInput);
     matWrap.appendChild(matList);
     selects.appendChild(matWrap);
     selects.appendChild(colorSel);
-    selects.appendChild(optSel);
 
     // Thumb column
     const thumbCol = document.createElement("div");
@@ -913,8 +906,6 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
   colorSel.innerHTML = '<option value="">— color —</option>';
   colorSel.classList.add("sel-hidden");
-  optSel.innerHTML = '<option value="">— option —</option>';
-  optSel.classList.add("sel-hidden");
   img.classList.remove("loaded"); img.src = "";
   priceEl.textContent = "—"; priceEl.className = "position-price na";
   if (!mat) return;
@@ -935,14 +926,7 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
     updateColorSelectStyle(colorSel, mat);
   }
 
-  const variants = mat.variants || [];
-  if (variants.length > 0 && variants[0].options?.length > 0) {
-    variants[0].options.forEach(o => {
-      const opt = document.createElement("option");
-      opt.value = o; opt.textContent = o; optSel.appendChild(opt);
-    });
-    optSel.classList.remove("sel-hidden");
-  }
+
 }
 
 // ── RECALC ────────────────────────────────────────────────────────────────────
@@ -1167,10 +1151,6 @@ function addFeatureCard(feat) {
     const colorSel = document.createElement("select");
     colorSel.className = "color-select";
     colorSel.innerHTML = '<option value="">— color —</option>';
-    const optSel = document.createElement("select");
-    optSel.className = "opt-select";
-    optSel.innerHTML = '<option value="">— option —</option>';
-    optSel.classList.add("sel-hidden");
 
     function buildOptions(query) {
       optionsContainer.innerHTML = "";
@@ -1222,10 +1202,8 @@ function addFeatureCard(feat) {
       updateColorSelectStyle(colorSel, mat);
       onAnyChange();
     };
-    optSel.onchange = onAnyChange;
-
     matWrap.appendChild(matInput); matWrap.appendChild(matList);
-    selects.appendChild(matWrap); selects.appendChild(colorSel); selects.appendChild(optSel);
+    selects.appendChild(matWrap); selects.appendChild(colorSel);
     // thumb column
     const thumbCol2 = document.createElement("div");
     thumbCol2.className = "position-card-thumb-col";
