@@ -125,7 +125,8 @@
   }
   .autosave-dot.saved { background: var(--accent); }
 
-  .positions { display: flex; flex-direction: column; gap: 0.5rem; }
+  .positions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  @media (max-width: 700px) { .positions { grid-template-columns: 1fr; } }
 
   .position-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
@@ -159,7 +160,7 @@
   }
 
   .position-thumb-wrap {
-    width: 64px; height: 64px; flex-shrink: 0; border-radius: 6px;
+    width: 70px; height: 70px; flex-shrink: 0; border-radius: 6px;
     background: var(--bg); border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; font-size: 26px;
@@ -286,21 +287,15 @@
     width: 100%; margin-bottom: 0.5rem; font-size: 11px; padding: 0;
     text-align: center; height: 32px;
   }
-  .template-edit {
-    display: block; width: 100%; margin: 6px 0 0;
-    background: none; border: none;
-    font-size: 11px; font-family: var(--mono); color: var(--text-muted);
-    cursor: pointer; padding: 0; border-radius: 0;
-    transition: color 0.15s; line-height: 1; text-align: left;
-    height: 32px; text-decoration: underline; text-underline-offset: 2px;
+  .template-actions { display: flex; gap: 4px; margin-top: 6px; }
+  .tmpl-icon-btn {
+    background: none; border: none; cursor: pointer; padding: 3px 5px;
+    border-radius: 4px; color: var(--text-muted); transition: color 0.15s, background 0.15s;
+    display: flex; align-items: center; justify-content: center;
   }
-  .template-edit:hover { color: var(--text); }
-  .template-edit.is-save {
-    background: var(--accent-light); border: 1px solid var(--border);
-    color: var(--accent); border-radius: 5px;
-    text-decoration: none; text-align: center; font-weight: 500;
-  }
-  .template-edit.is-save:hover { background: #dce8e0; }
+  .tmpl-icon-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .tmpl-icon-btn.is-active { color: var(--accent); }
+  .tmpl-icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
   .mobile-templates-strip { display: none; }
 
@@ -349,7 +344,7 @@
   <span class="field-label">Rate /hr</span>
   <input class="field-input" type="number" id="hourlyRateMobile" value="20" min="0" step="1" oninput="document.getElementById('hourlyRate').value=this.value;onAnyChange()">
   <span class="field-label">€</span>
-  <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">add template</button>
+  <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">save new draft</button>
 </div>
 <div class="mobile-templates-strip" id="mobileTemplatesStrip"></div>
 <div class="page-layout">
@@ -419,7 +414,7 @@
       <input class="field-input rate-input" type="number" id="hourlyRate" value="20" min="0" step="1" oninput="onAnyChange()">
       <span class="field-label">€</span>
     </div>
-    <button class="btn-save-tmpl btn-new-tmpl" onclick="saveTemplate()">add template</button>
+    <button class="btn-save-tmpl btn-new-tmpl" onclick="saveTemplate()">save new draft</button>
     <div class="templates-label">Templates</div>
     <div class="templates-empty" id="templatesEmpty">No saved templates</div>
   </div>
@@ -1232,40 +1227,50 @@ function renderTemplates(templates) {
       await deleteTemplate(t.name);
     };
 
-    // Edit / Save button
+    // Two permanent icon buttons: edit (load) + save
+    const actions = document.createElement("div");
+    actions.className = "template-actions";
+
+    const ICON_EDIT = `<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    const ICON_SAVE = `<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+
     const editBtn = document.createElement("button");
-    editBtn.className = "template-edit";
-    editBtn.textContent = activeEditTemplate === t.name ? "save" : "edit";
-    if (activeEditTemplate === t.name) editBtn.classList.add("is-save");
-    editBtn.title = activeEditTemplate === t.name ? "Save changes to this template" : "Load and edit this template";
+    editBtn.className = "tmpl-icon-btn" + (activeEditTemplate === t.name ? " is-active" : "");
+    editBtn.innerHTML = ICON_EDIT;
+    editBtn.title = "Load & edit";
     editBtn.onclick = async (e) => {
       e.stopPropagation();
-      if (activeEditTemplate === t.name) {
-        // Save current state back to this template
-        editBtn.textContent = "…";
-        editBtn.classList.add("saving");
-        const state = collectState();
-        state.productName = t.name;
-        try {
-          await fetch(`${API}/templates`, {
-            method: "POST", headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(state)
-          });
-        } catch(err) { console.error("save failed", err); }
-        activeEditTemplate = null;
-        cacheInvalidate("templates"); await loadTemplates();
-      } else {
-        // Load template and enter edit mode
-        activeEditTemplate = t.name;
-        loadTemplate(t);
-        cacheInvalidate("templates"); await loadTemplates();
-      }
+      activeEditTemplate = t.name;
+      loadTemplate(t);
+      cacheInvalidate("templates"); await loadTemplates();
     };
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "tmpl-icon-btn";
+    saveBtn.innerHTML = ICON_SAVE;
+    saveBtn.title = "Save current state to this template";
+    saveBtn.onclick = async (e) => {
+      e.stopPropagation();
+      saveBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+      const state = collectState();
+      state.productName = t.name;
+      try {
+        await fetch(`${API}/templates`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(state)
+        });
+      } catch(err) { console.error("save failed", err); }
+      activeEditTemplate = null;
+      cacheInvalidate("templates"); await loadTemplates();
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(saveBtn);
 
     card.appendChild(nameEl);
     card.appendChild(meta);
     card.appendChild(del);
-    card.appendChild(editBtn);
+    card.appendChild(actions);
     card.onclick = () => loadTemplate(t);
     sidebar.appendChild(card);
   });
