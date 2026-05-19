@@ -167,7 +167,7 @@
     display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0;
   }
   .position-card-middle {
-    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; gap: 4px;
     padding: 4px 0;
   }
   .position-card-bottom-price {
@@ -281,6 +281,11 @@
     .position-label { width: auto; }
     .position-card { font-size: 11px; }
   }
+
+  
+
+  /* ── INTRO OVERLAY ─────────────────────────────────────────────────────── */
+
 
   .btn-reset {
     font-family: var(--sans); font-size: 12px; font-weight: 500;
@@ -402,6 +407,7 @@
 </div>
 <div class="mobile-templates-strip" id="mobileTemplatesStrip"></div>
 <div class="page-layout">
+  <!-- MAIN CALCULATOR -->
   <div class="calc-main">
     <div class="product-bar">
       <input class="qty-input" type="number" id="qty" value="1" min="1" step="1" oninput="onAnyChange()">
@@ -421,6 +427,7 @@
       <div class="empty-state">Select a product above to start</div>
     </div>
 
+    <!-- FEATURES -->
     <div class="features-section" id="featuresSection" style="display:none;">
       <div class="features-added" id="featuresAdded"></div>
       <div class="feat-add-wrap">
@@ -460,6 +467,7 @@
     </div>
   </div>
 
+  <!-- TEMPLATES SIDEBAR -->
   <div class="templates-sidebar" id="templatesSidebar">
     <div class="sidebar-rate">
       <span class="field-label">Rate /hr</span>
@@ -473,6 +481,11 @@
 </div>
 
 <script>
+
+
+
+// ── SHARED API UTILS ─────────────────────────────────────────────────────────
+ // 10 min
 
 function cacheSet(key, data) {
   try { localStorage.setItem(key, JSON.stringify({ data })); } catch(e) {}
@@ -500,6 +513,7 @@ async function apiFetch(url, options, retries = 3) {
   }
 }
 
+// Keep-alive ping every 8 min
 setInterval(() => {
   fetch("https://materials-parser-api.onrender.com/health").catch(() => {});
 }, 8 * 60 * 1000);
@@ -511,6 +525,7 @@ let featuresData = { headers: [], features: [] };
 let autosaveTimer = null;
 let activeEditTemplate = null;
 
+// ── INIT ──────────────────────────────────────────────────────────────────────
 function loadFromCache() {
   const cp = cacheGet("products");
   if (cp) { headers = cp.headers || []; products = cp.products || []; populateProductSelect(); }
@@ -531,6 +546,7 @@ async function init() {
   const hasCached = loadFromCache();
   const raw = localStorage.getItem(AUTO_SAVE_KEY);
   if (hasCached && raw) { try { restoreFromState(JSON.parse(raw)); } catch(e) {} }
+  // Templates always fresh (change often), rest only if no cache
   await loadTemplates();
   if (!hasCached) await Promise.all([loadProducts(), loadMaterials(), loadFeaturesData()]);
 }
@@ -590,6 +606,7 @@ function populateProductSelect() {
   });
 }
 
+// ── TYPE MAPPING ──────────────────────────────────────────────────────────────
 function getTypeFromHeader(h) {
   const first = h.split(/[\s:]/)[0].toLowerCase();
   const map = { fabric:"Fabric", foam:"Foam", webbing:"Webbing", zipper:"Zipper", furniture:"Furniture", binding:"Binding" };
@@ -601,6 +618,7 @@ function filterMaterialsByHeader(h) {
   return type ? materials.filter(m => m.type === type) : materials;
 }
 
+// ── PRODUCT CHANGE ────────────────────────────────────────────────────────────
 function onProductChange() {
   const idx = parseInt(document.getElementById("productSelect").value);
   if (isNaN(idx)) {
@@ -617,6 +635,7 @@ function onProductChange() {
   onAnyChange();
 }
 
+// ── AUTOSAVE ──────────────────────────────────────────────────────────────────
 function onAnyChange() {
   recalc();
   clearTimeout(autosaveTimer);
@@ -629,10 +648,8 @@ function autoSave() {
   const state = collectState();
   localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(state));
   const dot = document.getElementById("autosaveDot");
-  if (dot) {
-    dot.classList.add("saved");
-    setTimeout(() => dot.classList.remove("saved"), 1500);
-  }
+  dot.classList.add("saved");
+  setTimeout(() => dot.classList.remove("saved"), 1500);
 }
 
 function collectState() {
@@ -653,15 +670,13 @@ function collectState() {
     const optSel = card.querySelector(".opt-select");
     const mi = parseInt(matInput?.dataset.selectedIdx);
     const mat = isNaN(mi) ? null : materials[mi];
-    if (card.dataset.header) {
-      state.positions.push({
-        header: card.dataset.header,
-        matUrl: mat?.url || "",
-        matTitle: matInput?.value || "",
-        colorIdx: colorSel?.value || "",
-        optVal: optSel?.value || ""
-      });
-    }
+    state.positions.push({
+      header: card.dataset.header,
+      matUrl: mat?.url || "",
+      matTitle: matInput?.value || "",
+      colorIdx: colorSel?.value || "",
+      optVal: optSel?.value || ""
+    });
   });
   return state;
 }
@@ -672,6 +687,7 @@ function restoreFromState(state) {
   if (state.qty) document.getElementById("qty").value = state.qty;
   if (state.productIdx !== undefined && state.productIdx !== "") {
     const sel = document.getElementById("productSelect");
+    // Find product by name first, fall back to index
     let idx = -1;
     if (state.productName) {
       idx = products.findIndex(p => p[headers[0]] === state.productName);
@@ -694,24 +710,23 @@ function restoreFromState(state) {
         const optSel = card.querySelector(".opt-select");
         const img = card.querySelector("img");
         const priceEl = card.querySelector(".position-price");
-        if (matInput) {
-          matInput.dataset.selectedIdx = mi;
-          matInput.value = saved.matTitle || mat.title || "";
-          onMatSelected(mi, img, colorSel, optSel, priceEl, parseFloat(card.dataset.qty));
-          if (saved.colorIdx !== "" && colorSel) {
-            colorSel.value = saved.colorIdx;
-            const c = (mat.colors || [])[parseInt(saved.colorIdx)];
-            if (c?.image && img) img.src = c.image;
-            updateColorSelectStyle(colorSel, mat);
-          }
-          if (saved.optVal && optSel) optSel.value = saved.optVal;
+        matInput.dataset.selectedIdx = mi;
+        matInput.value = saved.matTitle || mat.title || "";
+        onMatSelected(mi, img, colorSel, optSel, priceEl, parseFloat(card.dataset.qty));
+        if (saved.colorIdx !== "" && colorSel) {
+          colorSel.value = saved.colorIdx;
+          const c = (mat.colors || [])[parseInt(saved.colorIdx)];
+          if (c?.image && img) img.src = c.image;
+          updateColorSelectStyle(colorSel, mat);
         }
+        if (saved.optVal && optSel) optSel.value = saved.optVal;
       });
       recalc();
     }, 100);
   }
 }
 
+// ── RENDER POSITIONS ──────────────────────────────────────────────────────────
 function renderPositions(product) {
   const container = document.getElementById("positions");
   container.innerHTML = "";
@@ -755,6 +770,7 @@ function renderPositions(product) {
 
     const filtered = filterMaterialsByHeader(h);
 
+    // Searchable dropdown
     const matWrap = document.createElement("div");
     matWrap.className = "mat-dropdown-wrap";
 
@@ -848,9 +864,10 @@ function renderPositions(product) {
     selects.appendChild(colorSel);
     selects.appendChild(optSel);
 
+    // Thumb column
     const thumbCol = document.createElement("div");
     thumbCol.className = "position-card-thumb-col";
-    thumbCol.style.cursor = "pointer";
+    thumbCol.style.width = "90px"; thumbCol.style.minWidth = "90px"; thumbCol.style.cursor = "pointer";
     thumbCol.appendChild(img);
     thumbCol.appendChild(placeholder);
     thumbCol.addEventListener("click", () => {
@@ -858,18 +875,22 @@ function renderPositions(product) {
       openLightbox(src, placeholder.textContent, thumbCol);
     });
 
+    // Content column
     const content = document.createElement("div");
     content.className = "position-card-content";
 
+    // Row 1: label + qty
     const cardTop = document.createElement("div");
     cardTop.className = "position-card-top";
     cardTop.appendChild(label);
     cardTop.appendChild(qtyEl);
 
+    // Row 2: selects (centered)
     const cardMiddle = document.createElement("div");
     cardMiddle.className = "position-card-middle";
     cardMiddle.appendChild(selects);
 
+    // Row 3: price
     const priceRow = document.createElement("div");
     priceRow.className = "position-card-bottom-price";
     priceRow.appendChild(priceEl);
@@ -890,13 +911,12 @@ function renderPositions(product) {
 
 function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
-  if (!colorSel || !optSel) return;
   colorSel.innerHTML = '<option value="">— color —</option>';
   colorSel.classList.add("sel-hidden");
   optSel.innerHTML = '<option value="">— option —</option>';
   optSel.classList.add("sel-hidden");
-  if (img) { img.classList.remove("loaded"); img.src = ""; }
-  if (priceEl) { priceEl.textContent = "—"; priceEl.className = "position-price na"; }
+  img.classList.remove("loaded"); img.src = "";
+  priceEl.textContent = "—"; priceEl.className = "position-price na";
   if (!mat) return;
 
   const colors = mat.colors || [];
@@ -911,7 +931,7 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
     });
     colorSel.classList.remove("sel-hidden");
     colorSel.value = 0;
-    if (colors[0]?.image && img) img.src = colors[0].image;
+    if (colors[0]?.image) img.src = colors[0].image;
     updateColorSelectStyle(colorSel, mat);
   }
 
@@ -925,7 +945,548 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   }
 }
 
+// ── RECALC ────────────────────────────────────────────────────────────────────
 function recalc() {
   const qty = parseInt(document.getElementById("qty").value) || 1;
   const rate = parseFloat(document.getElementById("hourlyRate").value) || 0;
-  const idx = parseInt(document
+  const idx = parseInt(document.getElementById("productSelect").value);
+  const product = isNaN(idx) ? null : products[idx];
+  const hoursHeader = headers.find(h => h.toLowerCase().includes("working") || h.toLowerCase().includes("hours")) || headers[headers.length - 1];
+  const hours = product ? parseFloat((product[hoursHeader] || "0").replace(",", ".")) : 0;
+
+  let matTotal = 0;
+  document.querySelectorAll(".position-card").forEach(card => {
+    const posQty = parseFloat(card.dataset.qty || "0");
+    const matInput = card.querySelector(".mat-search-input");
+    const colorSel = card.querySelector(".color-select");
+    const mi = parseInt(matInput?.dataset.selectedIdx);
+    const mat = isNaN(mi) ? null : materials[mi];
+    const priceEl = card.querySelector(".position-price");
+    let price = 0;
+    if (mat) {
+      const ci = parseInt(colorSel?.value);
+      const color = !isNaN(ci) ? (mat.colors || [])[ci] : null;
+      price = color?.price_per_unit || parsePrice(mat.price || "");
+    }
+    const lineTotal = price * posQty * qty;
+    matTotal += lineTotal;
+    if (priceEl) {
+      priceEl.textContent = mat && price ? `${lineTotal.toFixed(2)} EUR` : "—";
+      priceEl.className = "position-price" + (mat && price ? "" : " na");
+    }
+  });
+
+  // Feature material costs
+  let featMatTotal = 0;
+  let featLabourTotal = 0;
+  const hoursHeaderFeat = featuresData.headers.find(h => h.toLowerCase().includes("working") || h.toLowerCase().includes("hours"));
+  document.querySelectorAll(".feature-card").forEach(card => {
+    card.querySelectorAll(".position-card").forEach(posCard => {
+      const posQty = parseFloat(posCard.dataset.qty || "0");
+      const matInput = posCard.querySelector(".mat-search-input");
+      const colorSel = posCard.querySelector(".color-select");
+      const mi = parseInt(matInput?.dataset.selectedIdx);
+      const mat = isNaN(mi) ? null : materials[mi];
+      const priceEl = posCard.querySelector(".position-price");
+      let price = 0;
+      if (mat) {
+        const ci = parseInt(colorSel?.value);
+        const color = !isNaN(ci) ? (mat.colors || [])[ci] : null;
+        price = color?.price_per_unit || parsePrice(mat.price || "");
+      }
+      const lineTotal = price * posQty * qty;
+      featMatTotal += lineTotal;
+      if (priceEl) {
+        priceEl.textContent = mat && price ? `${lineTotal.toFixed(2)} EUR` : "—";
+        priceEl.className = "position-price" + (mat && price ? "" : " na");
+      }
+    });
+    // Feature labour
+    const featName = card.dataset.featname;
+    const feat = featuresData.features.find(f => f[featuresData.headers[0]] === featName);
+    if (feat && hoursHeaderFeat) {
+      const fHours = parseFloat((feat[hoursHeaderFeat] || "0").replace(",", ".")) || 0;
+      featLabourTotal += fHours * rate * qty;
+    }
+  });
+
+  const labourTotal = hours * rate * qty + featLabourTotal;
+  const costTotal = matTotal + featMatTotal + labourTotal;
+  const markupPct = parseFloat(document.getElementById("markupPct")?.value || "0");
+  const markupAmt = costTotal * (markupPct / 100);
+
+  document.getElementById("sumMaterials").textContent = `${(matTotal + featMatTotal).toFixed(2)} EUR`;
+  document.getElementById("sumLabour").textContent = `${labourTotal.toFixed(2)} EUR`;
+  if (isAdmin) {
+    document.getElementById("sumCost").textContent = `${costTotal.toFixed(2)} EUR`;
+    document.getElementById("sumMarkup").textContent = `${markupAmt.toFixed(2)} EUR (+${markupPct}%)`;
+    document.getElementById("sumTotal").textContent = `${(costTotal + markupAmt).toFixed(2)} EUR`;
+  } else {
+    document.getElementById("sumTotal").textContent = `${costTotal.toFixed(2)} EUR`;
+  }
+}
+
+function parsePrice(str) {
+  if (!str) return 0;
+  const m = str.replace(",", ".").match(/[\d.]+/);
+  return m ? parseFloat(m[0]) : 0;
+}
+
+// ── FEATURES ──────────────────────────────────────────────────────────────────
+function toggleFeatDropdown() {
+  const list = document.getElementById("featDropList");
+  list.classList.toggle("open");
+  if (list.classList.contains("open")) {
+    document.getElementById("featSearchInput").value = "";
+    buildFeatOptions("");
+    setTimeout(() => document.getElementById("featSearchInput").focus(), 50);
+  }
+}
+
+document.addEventListener("click", e => {
+  const wrap = document.getElementById("featDropWrap");
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById("featDropList")?.classList.remove("open");
+  }
+});
+
+function buildFeatOptions(query) {
+  const container = document.getElementById("featOptions");
+  if (!container) return;
+  container.innerHTML = "";
+  const q = query.toLowerCase();
+  const nameHeader = featuresData.headers[0];
+  const results = featuresData.features.filter(f => !q || (f[nameHeader] || "").toLowerCase().includes(q));
+  if (!results.length) {
+    const no = document.createElement("div");
+    no.className = "mat-option no-results"; no.textContent = "No features found";
+    container.appendChild(no); return;
+  }
+  results.forEach(feat => {
+    const opt = document.createElement("div");
+    opt.className = "mat-option";
+    opt.textContent = feat[nameHeader] || "—";
+    opt.onclick = () => {
+      document.getElementById("featDropList").classList.remove("open");
+      addFeatureCard(feat);
+      onAnyChange();
+    };
+    container.appendChild(opt);
+  });
+}
+
+function filterFeatOptions(query) { buildFeatOptions(query); }
+
+function addFeatureCard(feat) {
+  const nameHeader = featuresData.headers[0];
+  const hoursHeader = featuresData.headers.find(h => h.toLowerCase().includes("working") || h.toLowerCase().includes("hours"));
+  const featName = feat[nameHeader] || "Feature";
+  const posHeaders = featuresData.headers.filter(h => h !== nameHeader && h !== hoursHeader);
+
+  const card = document.createElement("div");
+  card.className = "feature-card";
+  card.dataset.featname = featName;
+
+  const top = document.createElement("div");
+  top.className = "feature-card-top";
+  const lbl = document.createElement("span");
+  lbl.className = "feature-card-label";
+  lbl.textContent = featName;
+  top.appendChild(lbl);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "feature-remove-btn";
+  removeBtn.textContent = "×";
+  removeBtn.onclick = () => { card.remove(); onAnyChange(); };
+
+  const bottom = document.createElement("div");
+  bottom.className = "feature-card-bottom";
+
+  posHeaders.forEach(h => {
+    const posQty = parseFloat((feat[h] || "0").replace(",", "."));
+    if (!posQty) return;
+
+    const posCard = document.createElement("div");
+    posCard.className = "position-card";
+    posCard.dataset.header = h;
+    posCard.dataset.qty = posQty;
+
+    const type = getTypeFromHeader(h);
+    const unit = (type === "Zipper" || type === "Furniture") ? "pcs" : "sqm";
+
+    const cardTop = document.createElement("div");
+    cardTop.className = "position-card-top";
+    const label = document.createElement("div");
+    label.className = "position-label";
+    label.textContent = h;
+    const qtyEl = document.createElement("div");
+    qtyEl.className = "position-qty";
+    qtyEl.textContent = `× ${posQty} ${unit}`;
+    cardTop.appendChild(label);
+    cardTop.appendChild(qtyEl);
+
+    const priceEl = document.createElement("div");
+    priceEl.className = "position-price na";
+    priceEl.textContent = "—";
+
+    const cardBottom = document.createElement("div");
+    cardBottom.className = "position-card-bottom";
+
+    const thumbWrap = document.createElement("div");
+    thumbWrap.className = "position-thumb-wrap";
+    const img = document.createElement("img");
+    img.onload = () => img.classList.add("loaded");
+    img.onerror = () => img.classList.remove("loaded");
+    const placeholder = document.createElement("span");
+    placeholder.className = "thumb-placeholder";
+    const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
+    placeholder.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    thumbWrap.appendChild(img); thumbWrap.appendChild(placeholder);
+
+    const selects = document.createElement("div");
+    selects.className = "position-selects";
+
+    const filtered = filterMaterialsByHeader(h);
+    const matWrap = document.createElement("div");
+    matWrap.className = "mat-dropdown-wrap";
+    const matInput = document.createElement("input");
+    matInput.className = "mat-search-input";
+    matInput.placeholder = "— select material —";
+    matInput.readOnly = true;
+    matInput.dataset.selectedIdx = "";
+    const matList = document.createElement("div");
+    matList.className = "mat-dropdown-list";
+    const searchBox = document.createElement("div");
+    searchBox.className = "mat-search-box";
+    const searchInput = document.createElement("input");
+    searchInput.type = "text"; searchInput.placeholder = "Search…";
+    searchBox.appendChild(searchInput); matList.appendChild(searchBox);
+    const optionsContainer = document.createElement("div");
+    matList.appendChild(optionsContainer);
+
+    const colorSel = document.createElement("select");
+    colorSel.className = "color-select";
+    colorSel.innerHTML = '<option value="">— color —</option>';
+    const optSel = document.createElement("select");
+    optSel.className = "opt-select";
+    optSel.innerHTML = '<option value="">— option —</option>';
+    optSel.classList.add("sel-hidden");
+
+    function buildOptions(query) {
+      optionsContainer.innerHTML = "";
+      const q = query.toLowerCase();
+      const results = filtered.filter(m => !q || (m.title || "").toLowerCase().includes(q));
+      if (!results.length) {
+        const no = document.createElement("div");
+        no.className = "mat-option no-results"; no.textContent = "No results";
+        optionsContainer.appendChild(no); return;
+      }
+      results.forEach(m => {
+        const realIdx = materials.indexOf(m);
+        const opt = document.createElement("div");
+        opt.className = "mat-option";
+        if (matInput.dataset.selectedIdx === String(realIdx)) opt.classList.add("selected");
+        opt.textContent = m.title || m.url;
+        opt.onclick = () => {
+          matInput.dataset.selectedIdx = realIdx;
+          matInput.value = m.title || m.url;
+          matList.classList.remove("open");
+          onMatSelected(realIdx, img, colorSel, optSel, priceEl, posQty);
+          onAnyChange();
+        };
+        optionsContainer.appendChild(opt);
+      });
+    }
+
+    matInput.onclick = e => {
+      e.stopPropagation();
+      matList.classList.toggle("open");
+      if (matList.classList.contains("open")) {
+        const rect = matInput.getBoundingClientRect();
+        matList.style.top = (rect.bottom + window.scrollY + 2) + "px";
+        matList.style.left = rect.left + "px";
+        matList.style.width = rect.width + "px";
+        searchInput.value = ""; buildOptions("");
+        setTimeout(() => searchInput.focus(), 50);
+      }
+    };
+    searchInput.oninput = () => buildOptions(searchInput.value);
+    searchInput.onclick = e => e.stopPropagation();
+    document.addEventListener("click", e => { if (!matWrap.contains(e.target)) matList.classList.remove("open"); });
+    colorSel.onchange = () => {
+      const mi = parseInt(matInput.dataset.selectedIdx);
+      const mat = isNaN(mi) ? null : materials[mi];
+      if (!mat) return;
+      const c = (mat.colors || [])[parseInt(colorSel.value)];
+      if (c?.image) img.src = c.image;
+      updateColorSelectStyle(colorSel, mat);
+      onAnyChange();
+    };
+    optSel.onchange = onAnyChange;
+
+    matWrap.appendChild(matInput); matWrap.appendChild(matList);
+    selects.appendChild(matWrap); selects.appendChild(colorSel); selects.appendChild(optSel);
+    // thumb column
+    const thumbCol2 = document.createElement("div");
+    thumbCol2.className = "position-card-thumb-col";
+    thumbCol2.style.width = "90px"; thumbCol2.style.minWidth = "90px"; thumbCol2.style.cursor = "pointer";
+    thumbCol2.appendChild(img);
+    thumbCol2.appendChild(placeholder);
+    thumbCol2.addEventListener("click", () => {
+      const src = img.src && img.classList.contains("loaded") ? img.src : null;
+      openLightbox(src, placeholder.textContent, thumbCol2);
+    });
+
+    // content column
+    const content2 = document.createElement("div");
+    content2.className = "position-card-content";
+
+    const cardMiddle2 = document.createElement("div");
+    cardMiddle2.className = "position-card-middle";
+    cardMiddle2.appendChild(selects);
+
+    const priceRow2 = document.createElement("div");
+    priceRow2.className = "position-card-bottom-price";
+    priceRow2.appendChild(priceEl);
+
+    content2.appendChild(cardTop);
+    content2.appendChild(cardMiddle2);
+    content2.appendChild(priceRow2);
+
+    posCard.appendChild(thumbCol2);
+    posCard.appendChild(content2);
+    bottom.appendChild(posCard);
+  });
+
+  card.appendChild(top); card.appendChild(removeBtn); card.appendChild(bottom);
+  document.getElementById("featuresAdded").appendChild(card);
+}
+
+// ── OUT OF STOCK ──────────────────────────────────────────────────────────────
+function updateColorSelectStyle(colorSel, mat) {
+  const ci = parseInt(colorSel.value);
+  const color = !isNaN(ci) ? (mat?.colors || [])[ci] : null;
+  const inStock = !color || !color.availability || color.availability === "In stock";
+  colorSel.classList.toggle("out-of-stock", !inStock);
+}
+
+// ── TEMPLATES ─────────────────────────────────────────────────────────────────
+async function loadTemplates() {
+  const cached = cacheGet("templates");
+  if (cached) renderTemplates(cached);
+  try {
+    const res = await apiFetch(`${API}/templates`);
+    if (!res.ok) return;
+    const templates = await res.json();
+    cacheSet("templates", templates);
+    renderTemplates(templates);
+  } catch(e) { console.warn("loadTemplates failed", e); }
+}
+
+function renderTemplates(templates) {
+  const sidebar = document.getElementById("templatesSidebar");
+  const empty = document.getElementById("templatesEmpty");
+  sidebar.querySelectorAll(".template-card").forEach(el => el.remove());
+
+  if (!templates || templates.length === 0) {
+    empty.style.display = "";
+    return;
+  }
+  empty.style.display = "none";
+
+  templates.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "template-card";
+
+    // Editable name
+    const nameEl = document.createElement("div");
+    nameEl.className = "template-name";
+    nameEl.textContent = t.name;
+    nameEl.contentEditable = "true";
+    nameEl.spellcheck = false;
+    nameEl.onclick = (e) => e.stopPropagation();
+    nameEl.onblur = async () => {
+      const newName = nameEl.textContent.trim();
+      if (!newName || newName === t.name) { nameEl.textContent = t.name; return; }
+      // Rename: delete old, save new
+      try {
+        await fetch(`${API}/templates/${encodeURIComponent(t.name)}`, { method: "DELETE" });
+        const state = collectState();
+        state.productName = newName;
+        await fetch(`${API}/templates`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({...state, productName: newName})
+        });
+        if (activeEditTemplate === t.name) activeEditTemplate = newName;
+        t.name = newName;
+      } catch(e) { nameEl.textContent = t.name; }
+    };
+    nameEl.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); nameEl.blur(); } };
+
+    const meta = document.createElement("div");
+    meta.className = "template-meta";
+    meta.textContent = ``;
+
+    const del = document.createElement("button");
+    del.className = "template-delete";
+    del.textContent = "×";
+    del.title = "Delete template";
+    del.onclick = async (e) => {
+      e.stopPropagation();
+      if (activeEditTemplate === t.name) activeEditTemplate = null;
+      await deleteTemplate(t.name);
+    };
+
+    // Two permanent icon buttons: edit (load) + save
+    const actions = document.createElement("div");
+    actions.className = "template-actions";
+
+    const ICON_EDIT = `<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    const ICON_SAVE = `<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "tmpl-icon-btn" + (activeEditTemplate === t.name ? " is-active" : "");
+    editBtn.innerHTML = ICON_EDIT;
+    editBtn.title = "Load & edit";
+    editBtn.onclick = async (e) => {
+      e.stopPropagation();
+      activeEditTemplate = t.name;
+      loadTemplate(t);
+      cacheInvalidate("templates"); await loadTemplates();
+    };
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "tmpl-icon-btn";
+    saveBtn.innerHTML = ICON_SAVE;
+    saveBtn.title = "Save current state to this template";
+    saveBtn.onclick = async (e) => {
+      e.stopPropagation();
+      saveBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+      const state = collectState();
+      state.productName = t.name;
+      try {
+        await fetch(`${API}/templates`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(state)
+        });
+      } catch(err) { console.error("save failed", err); }
+      activeEditTemplate = null;
+      cacheInvalidate("templates"); await loadTemplates();
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(saveBtn);
+
+    card.appendChild(nameEl);
+    card.appendChild(meta);
+    card.appendChild(del);
+    card.appendChild(actions);
+    card.onclick = () => loadTemplate(t);
+    sidebar.appendChild(card);
+  });
+
+  // Sync mobile horizontal strip
+  const mobileStrip = document.getElementById("mobileTemplatesStrip");
+  mobileStrip.innerHTML = "";
+  templates.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "template-card";
+    const nameEl = document.createElement("div");
+    nameEl.className = "template-name";
+    nameEl.textContent = t.name;
+    card.appendChild(nameEl);
+    card.onclick = () => loadTemplate(t);
+    mobileStrip.appendChild(card);
+  });
+}
+
+async function saveTemplate() {
+  const state = collectState();
+  if (!state.productName) { alert("Select a product first"); return; }
+  try {
+    const res = await fetch(`${API}/templates`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(state)
+    });
+    if (!res.ok) throw new Error("Save failed");
+    cacheInvalidate("templates"); await loadTemplates();
+  } catch(e) { console.error("saveTemplate failed", e); }
+}
+
+async function deleteTemplate(name) {
+  try {
+    await fetch(`${API}/templates/${encodeURIComponent(name)}`, { method: "DELETE" });
+    cacheInvalidate("templates"); await loadTemplates();
+  } catch(e) { console.error("deleteTemplate failed", e); }
+}
+
+function loadTemplate(t) {
+  try {
+    const state = typeof t.state === "string" ? JSON.parse(t.state) : (t.state || t);
+    restoreFromState(state);
+    const label = document.getElementById("draftLabel");
+    const name = document.getElementById("draftName");
+    if (label && name) { name.textContent = t.name; label.style.display = ""; }
+  } catch(e) { console.warn("loadTemplate failed", e); }
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetCalc() {
+  localStorage.removeItem(AUTO_SAVE_KEY);
+  document.getElementById("qty").value = 1;
+  document.getElementById("hourlyRate").value = 20;
+  document.getElementById("productSelect").value = "";
+  document.getElementById("positions").innerHTML = '<div class="empty-state">Select a product above to start</div>';
+  document.getElementById("summary").style.display = "none";
+  const dl = document.getElementById("draftLabel");
+  if (dl) dl.style.display = "none";
+  document.getElementById("featuresSection").style.display = "none";
+  document.getElementById("featuresAdded").innerHTML = "";
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function handleLogin() {
+  isAdmin = !isAdmin;
+  document.body.classList.toggle("is-admin", isAdmin);
+  document.getElementById("loginBtn").textContent = isAdmin ? "sign out" : "sign in";
+  recalc();
+}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+
+// ── THUMB LIGHTBOX ────────────────────────────────────────────────────────────
+function openLightbox(imgSrc, placeholderText, thumbEl) {
+  const overlay = document.getElementById("thumbLightbox");
+  const box = document.getElementById("thumbLightboxBox");
+  const img = document.getElementById("thumbLightboxImg");
+  const ph = document.getElementById("thumbLightboxPlaceholder");
+
+  if (imgSrc) {
+    img.src = imgSrc; img.style.display = "block"; ph.style.display = "none";
+  } else {
+    img.style.display = "none"; ph.style.display = "flex";
+    ph.textContent = placeholderText || "🧵";
+  }
+
+  const rect = thumbEl.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2 + window.scrollX;
+  const boxH = 420;
+  let top;
+  if (rect.bottom + 8 + boxH <= window.innerHeight) {
+    top = rect.bottom + 8 + window.scrollY;
+  } else {
+    top = rect.top + window.scrollY - boxH - 8;
+  }
+  box.style.left = centerX + "px";
+  box.style.top = top + "px";
+  overlay.classList.add("open");
+}
+
+function closeLightbox() {
+  document.getElementById("thumbLightbox").classList.remove("open");
+}
+
+init();
+</script>
+</body>
+</html>
