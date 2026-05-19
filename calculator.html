@@ -428,6 +428,42 @@
 <script>
 
 
+
+// ── SHARED API UTILS ─────────────────────────────────────────────────────────
+const CACHE_TTL = 10 * 60 * 1000; // 10 min
+
+function cacheSet(key, data) {
+  try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+function cacheGet(key) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) { sessionStorage.removeItem(key); return null; }
+    return data;
+  } catch(e) { return null; }
+}
+function cacheInvalidate(key) { try { sessionStorage.removeItem(key); } catch(e) {} }
+
+async function apiFetch(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch(e) {
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 2000));
+      else throw e;
+    }
+  }
+}
+
+// Keep-alive ping every 8 min
+setInterval(() => {
+  fetch("https://materials-parser-api.onrender.com/health").catch(() => {});
+}, 8 * 60 * 1000);
+
 const API = "https://materials-parser-api.onrender.com";
 const AUTO_SAVE_KEY = "calc_autosave";
 let products = [], headers = [], materials = [], isAdmin = false;
@@ -451,9 +487,19 @@ async function loadProducts() {
 }
 
 async function loadMaterials() {
+  const cached = cacheGet("materials");
+  if (cached) {
+    materials = cached;
+    materials.forEach(m => {
+      if (typeof m.colors === "string") { try { m.colors = JSON.parse(m.colors); } catch { m.colors = []; } }
+      if (typeof m.variants === "string") { try { m.variants = JSON.parse(m.variants); } catch { m.variants = []; } }
+    });
+    return;
+  }
   try {
-    const res = await fetch(`${API}/materials`);
+    const res = await apiFetch(`${API}/materials`);
     materials = await res.json();
+    cacheSet("materials", materials);
     materials.forEach(m => {
       if (typeof m.colors === "string") { try { m.colors = JSON.parse(m.colors); } catch { m.colors = []; } }
       if (typeof m.variants === "string") { try { m.variants = JSON.parse(m.variants); } catch { m.variants = []; } }
@@ -462,10 +508,13 @@ async function loadMaterials() {
 }
 
 async function loadFeaturesData() {
+  const cached = cacheGet("features");
+  if (cached) { featuresData = { headers: cached.headers || [], features: cached.features || [] }; return; }
   try {
-    const res = await fetch(`${API}/features`);
+    const res = await apiFetch(`${API}/features`);
     const data = await res.json();
     featuresData = { headers: data.headers || [], features: data.features || [] };
+    cacheSet("features", data);
   } catch(e) { console.warn("loadFeaturesData failed", e); }
 }
 
