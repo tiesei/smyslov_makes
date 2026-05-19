@@ -78,19 +78,18 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .table-wrap {
+    background: var(--surface);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    background: var(--surface);
-    position: relative;
   }
-
 
   body { overflow-x: hidden; }
 
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table { width: auto; min-width: 0; border-collapse: collapse; table-layout: fixed; }
   thead { background: var(--bg); }
   thead tr { position: relative; }
 
@@ -111,8 +110,6 @@
   th:first-child { width: 140px; }
   th.th-add { width: 28px; }
   th.th-del { width: 20px; }
-  th.th-filler { width: auto; }
-  td.td-filler { background: transparent !important; }
 
   .th-inner {
     padding: 4px 8px;
@@ -131,12 +128,13 @@
   .th-add-btn { width: 100%; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px 6px; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
   .th-add-btn:hover { color: var(--accent); }
 
-  tbody tr:nth-child(odd):not(.add-row-tr) td { background: var(--surface); }
-  tbody tr:nth-child(even):not(.add-row-tr) td { background: #f0ede6; }
-  tbody tr:not(.add-row-tr):hover td { background: #e8e4dc !important; }
-  tr.add-row-tr td { background: transparent !important; }
+  /* Zebra rows extend full width via tr background */
+  tbody tr:nth-child(odd):not(.add-row-tr) { background: var(--surface); }
+  tbody tr:nth-child(even):not(.add-row-tr) { background: #f4f1ec; }
+  tbody tr:not(.add-row-tr):hover { background: #ede9e2; }
+  tr.add-row-tr { background: transparent; }
 
-  td { padding: 2px 8px; border-bottom: none; vertical-align: middle; font-size: 13px; outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.7; }
+  td { padding: 2px 8px; border-bottom: none; vertical-align: middle; font-size: 13px; outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.7; background: transparent; }
   td:focus { background: #fff !important; box-shadow: inset 0 0 0 1px var(--accent); border-radius: 2px; white-space: normal; overflow: visible; }
 
   td.name-cell { font-weight: 500; white-space: nowrap; text-align: left; }
@@ -196,7 +194,7 @@
 
 <div class="status-bar" id="statusBar"></div>
 
-<div class="table-wrap" id="productsWrap">
+<div class="table-wrap">
   <table>
     <thead id="thead"></thead>
     <tbody id="tbody"></tbody>
@@ -205,7 +203,7 @@
 
 <div style="height:1.5rem;"></div>
 <div class="status-bar" id="featStatusBar"></div>
-<div class="table-wrap" id="featuresWrap">
+<div class="table-wrap">
   <table>
     <thead id="fthead"></thead>
     <tbody id="ftbody"></tbody>
@@ -274,7 +272,6 @@ function buildHead(hdrs, table) {
   addBtn.onclick = () => addColumn(table);
   thAdd.appendChild(addBtn); tr.appendChild(thAdd);
   const thDel = document.createElement("th"); thDel.className = "th-del"; tr.appendChild(thDel);
-  const thFiller = document.createElement("th"); thFiller.className = "th-filler"; tr.appendChild(thFiller);
   thead.appendChild(tr);
 }
 
@@ -289,20 +286,6 @@ function buildBody(rows, hdrs, table) {
   addBtn.textContent = table === "products" ? "+ Add product" : "+ Add feature";
   addBtn.onclick = () => addRow(table);
   addTd.appendChild(addBtn); addTr.appendChild(addTd); tbody.appendChild(addTr);
-}
-
-  bg.innerHTML = "";
-  const theadHeight = wrap.querySelector("thead")?.offsetHeight || 0;
-  const rows = [...wrap.querySelectorAll(`#${tbodyId} tr:not(.add-row-tr)`)];
-  rows.forEach((tr, i) => {
-    if (i % 2 === 1) {
-      const stripe = document.createElement("div");
-      stripe.className = "zebra-bg-stripe";
-      stripe.style.top = (theadHeight + tr.offsetTop) + "px";
-      stripe.style.height = tr.offsetHeight + "px";
-      bg.appendChild(stripe);
-    }
-  });
 }
 
 function makeColHeader(h, ci, total, table) {
@@ -372,7 +355,6 @@ function makeDataRow(product, ri, hdrs, table) {
   delBtn.className = "del-row-btn"; delBtn.textContent = "✕"; delBtn.title = "Delete";
   delBtn.onclick = () => { tr.remove(); if (table === "products") scheduleSave(); else scheduleFeatSave(); };
   tdDel.appendChild(delBtn); tr.appendChild(tdDel);
-  const tdFiller = document.createElement("td"); tdFiller.className = "td-filler"; tr.appendChild(tdFiller);
   return tr;
 }
 
