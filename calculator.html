@@ -867,7 +867,7 @@ function renderPositions(product) {
     // Thumb column
     const thumbCol = document.createElement("div");
     thumbCol.className = "position-card-thumb-col";
-    thumbCol.style.cssText = "width:90px;min-width:90px;cursor:pointer;";
+    thumbCol.style.width = "90px"; thumbCol.style.minWidth = "90px"; thumbCol.style.cursor = "pointer";
     thumbCol.appendChild(img);
     thumbCol.appendChild(placeholder);
     thumbCol.addEventListener("click", () => {
@@ -1229,7 +1229,7 @@ function addFeatureCard(feat) {
     // thumb column
     const thumbCol2 = document.createElement("div");
     thumbCol2.className = "position-card-thumb-col";
-    thumbCol2.style.cssText = "width:90px;min-width:90px;cursor:pointer;";
+    thumbCol2.style.width = "90px"; thumbCol2.style.minWidth = "90px"; thumbCol2.style.cursor = "pointer";
     thumbCol2.appendChild(img);
     thumbCol2.appendChild(placeholder);
     thumbCol2.addEventListener("click", () => {
