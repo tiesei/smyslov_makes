@@ -215,6 +215,7 @@
     white-space: nowrap; color: var(--text);
   }
   .position-price.na { color: var(--text-muted); }
+  .sel-hidden { opacity: 0 !important; pointer-events: none !important; }
 
   .position-selects { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 
@@ -788,12 +789,12 @@ function renderPositions(product) {
     const colorSel = document.createElement("select");
     colorSel.className = "color-select";
     colorSel.innerHTML = '<option value="">— color —</option>';
-    colorSel.style.opacity = "0.01"; colorSel.style.pointerEvents = "none";
+    colorSel.classList.add("sel-hidden");
 
     const optSel = document.createElement("select");
     optSel.className = "opt-select";
     optSel.innerHTML = '<option value="">— option —</option>';
-    optSel.style.opacity = "0"; optSel.style.pointerEvents = "none";
+    optSel.classList.add("sel-hidden");
 
     function buildOptions(query) {
       optionsContainer.innerHTML = "";
@@ -898,9 +899,9 @@ function renderPositions(product) {
 function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
   colorSel.innerHTML = '<option value="">— color —</option>';
-  colorSel.style.display = "none";
+  colorSel.classList.add("sel-hidden");
   optSel.innerHTML = '<option value="">— option —</option>';
-  optSel.style.display = "none";
+  optSel.classList.add("sel-hidden");
   img.classList.remove("loaded"); img.src = "";
   priceEl.textContent = "—"; priceEl.className = "position-price na";
   if (!mat) return;
@@ -915,7 +916,7 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
       if (!inStock) { o.style.color = "#c0392b"; o.dataset.out = "1"; }
       colorSel.appendChild(o);
     });
-    colorSel.style.opacity = "1"; colorSel.style.pointerEvents = "";
+    colorSel.classList.remove("sel-hidden");
     colorSel.value = 0;
     if (colors[0]?.image) img.src = colors[0].image;
     updateColorSelectStyle(colorSel, mat);
@@ -927,7 +928,7 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
       const opt = document.createElement("option");
       opt.value = o; opt.textContent = o; optSel.appendChild(opt);
     });
-    optSel.style.opacity = "1"; optSel.style.pointerEvents = "";
+    optSel.classList.remove("sel-hidden");
   }
 }
 
@@ -1156,7 +1157,7 @@ function addFeatureCard(feat) {
     const optSel = document.createElement("select");
     optSel.className = "opt-select";
     optSel.innerHTML = '<option value="">— option —</option>';
-    optSel.style.opacity = "0"; optSel.style.pointerEvents = "none";
+    optSel.classList.add("sel-hidden");
 
     function buildOptions(query) {
       optionsContainer.innerHTML = "";
