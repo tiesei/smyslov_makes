@@ -297,6 +297,41 @@
 <script>
 
 
+
+// ── SHARED API UTILS ─────────────────────────────────────────────────────────
+const CACHE_TTL = 10 * 60 * 1000;
+
+function cacheSet(key, data) {
+  try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+function cacheGet(key) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) { sessionStorage.removeItem(key); return null; }
+    return data;
+  } catch(e) { return null; }
+}
+function cacheInvalidate(key) { try { sessionStorage.removeItem(key); } catch(e) {} }
+
+async function apiFetch(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch(e) {
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 2000));
+      else throw e;
+    }
+  }
+}
+
+setInterval(() => {
+  fetch("https://materials-parser-api.onrender.com/health").catch(() => {});
+}, 8 * 60 * 1000);
+
 const API = "https://materials-parser-api.onrender.com";
 const TYPES = ["Fabric", "Foam", "Webbing", "Zipper", "Furniture", "Binding"];
 
@@ -551,9 +586,10 @@ function renderTable() {
 async function loadMaterials() {
   setStatus("Loading…", "loading");
   try {
-    const res = await fetch(`${API}/materials`);
+    const res = await apiFetch(`${API}/materials`);
     if (!res.ok) throw new Error("API error");
     allMaterials = await res.json();
+    cacheSet("materials", allMaterials);
     buildTypeDropdown();
     renderTable();
     clearStatus();
@@ -580,7 +616,7 @@ async function addMaterial() {
     if (!res.ok) { const e = await res.json(); throw new Error(e.detail || "Parse failed"); }
     const data = await res.json();
     input.value = "";
-    await loadMaterials();
+    cacheInvalidate('materials'); await loadMaterials();
     setStatus(`✓ Added: ${data.title}`, "");
     setTimeout(clearStatus, 3000);
   } catch(e) {
@@ -603,7 +639,7 @@ async function reparseMaterial(url, btn) {
     });
     clearTimeout(timer);
     if (!res.ok) throw new Error("Reparse failed");
-    await loadMaterials();
+    cacheInvalidate('materials'); await loadMaterials();
     setStatus("✓ Refreshed", "");
     setTimeout(clearStatus, 2000);
   } catch(e) {
