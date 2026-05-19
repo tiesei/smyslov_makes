@@ -1000,6 +1000,25 @@ function renderTemplates(templates) {
     const name = document.createElement("div");
     name.className = "template-name";
     name.textContent = t.name;
+    name.contentEditable = "true";
+    name.spellcheck = false;
+    name.onclick = (e) => e.stopPropagation();
+    name.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); name.blur(); } };
+    name.onblur = async () => {
+      const newName = name.textContent.trim();
+      if (!newName || newName === t.name) { name.textContent = t.name; return; }
+      try {
+        await apiFetch(`${API}/templates/${encodeURIComponent(t.name)}`, { method: "DELETE" });
+        const state = collectState();
+        state.name = newName;
+        await apiFetch(`${API}/templates`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(state)
+        });
+        t.name = newName;
+        cacheInvalidate("templates");
+      } catch(e) { name.textContent = t.name; }
+    };
 
     const del = document.createElement("button");
     del.className = "template-delete";
