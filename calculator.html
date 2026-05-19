@@ -26,8 +26,12 @@
 
   nav {
     background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;
-    height: 60px; position: sticky; top: 0; z-index: 9999;
+    padding: 0; display: flex; align-items: center;
+    height: 60px; position: sticky; top: 0; z-index: 9999; justify-content: center;
+  }
+  .nav-inner {
+    width: 100%; max-width: 1100px; display: flex; align-items: center;
+    gap: 0.5rem; padding: 0 0.75rem;
   }
 
   .nav-brand {
@@ -53,7 +57,7 @@
   .sign-in-btn { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; color: var(--text-muted); font-family: var(--sans); }
 
   /* LAYOUT: sidebar for templates */
-  .page-layout { display: flex; gap: 0.5rem; padding: 0.5rem; align-items: flex-start; min-width: 0; }
+  .page-layout { display: flex; gap: 0.5rem; padding: 0.5rem; align-items: flex-start; min-width: 0; max-width: 1100px; margin: 0 auto; }
   .calc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.75rem; max-width: 700px; }
 
   /* TEMPLATES SIDEBAR */
@@ -118,6 +122,12 @@
     transition: background 0.15s; flex-shrink: 0; height: 32px;
   }
   .btn-save-tmpl:hover { background: #dce8e0; }
+
+  .draft-label {
+    font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 0;
+  }
+  .draft-label span { color: var(--accent); font-weight: 500; }
 
   .autosave-dot {
     width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted);
@@ -326,6 +336,7 @@
 <body>
 
 <nav>
+  <div class="nav-inner">
   <a href="index.html" class="nav-brand">
     <img src="logo.png" alt="smysl makes">
     <span class="nav-brand-sub">makes</span>
@@ -337,6 +348,7 @@
   </div>
   <div class="nav-end">
     <button class="sign-in-btn" id="loginBtn" onclick="handleLogin()">sign in</button>
+  </div>
   </div>
 </nav>
 
@@ -357,6 +369,7 @@
       </select>
       <button class="btn-reset" onclick="resetCalc()">Reset</button>
     </div>
+    <div class="draft-label" id="draftLabel" style="display:none">editing draft: <span id="draftName"></span></div>
     <div class="field-group admin-only" id="markupField" style="padding:0.4rem 0;">
       <span class="field-label">Markup</span>
       <input class="field-input" type="number" id="markupPct" value="30" min="0" step="5" oninput="onAnyChange()">
@@ -1314,6 +1327,9 @@ function loadTemplate(t) {
   try {
     const state = typeof t.state === "string" ? JSON.parse(t.state) : (t.state || t);
     restoreFromState(state);
+    const label = document.getElementById("draftLabel");
+    const name = document.getElementById("draftName");
+    if (label && name) { name.textContent = t.name; label.style.display = ""; }
   } catch(e) { console.warn("loadTemplate failed", e); }
 }
 
@@ -1325,6 +1341,8 @@ function resetCalc() {
   document.getElementById("productSelect").value = "";
   document.getElementById("positions").innerHTML = '<div class="empty-state">Select a product above to start</div>';
   document.getElementById("summary").style.display = "none";
+  const dl = document.getElementById("draftLabel");
+  if (dl) dl.style.display = "none";
   document.getElementById("featuresSection").style.display = "none";
   document.getElementById("featuresAdded").innerHTML = "";
 }
