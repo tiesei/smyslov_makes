@@ -103,38 +103,27 @@
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     position: relative;
-    width: 72px;
+    width: 90px;
     padding: 0;
     vertical-align: bottom;
   }
-  th:first-child { width: 130px; }
+  th:first-child { width: 140px; }
   th.th-add { width: 28px; }
   th.th-del { width: 20px; }
 
-  .th-controls {
-    display: flex; flex-direction: row; gap: 1px; align-items: center;
-    justify-content: center;
-    height: 0; overflow: hidden; opacity: 0;
-    transition: height 0.12s, opacity 0.12s;
-    padding: 0;
-  }
-  th:hover .th-controls {
-    height: 18px; opacity: 1; padding: 1px 0;
-  }
-  th:first-child .th-controls { justify-content: flex-start; padding-left: 6px; }
-
   .th-inner {
-    padding: 2px 6px 4px;
-    display: flex; align-items: center; justify-content: flex-end;
+    padding: 4px 8px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 4px;
   }
   th:first-child .th-inner { justify-content: flex-start; }
 
   .th-name { outline: none; cursor: text; white-space: nowrap; }
   .th-name:focus { color: var(--text); }
 
-  .col-btn { font-size: 9px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 1px 3px; border-radius: 2px; line-height: 1; transition: color 0.1s, background 0.1s; }
-  .col-btn:hover { color: var(--text); background: var(--border); }
-  .col-btn.del:hover { color: #8b3a2a; }
+  .col-btn { font-size: 9px; background: none; border: none; cursor: pointer; color: transparent; padding: 1px 2px; border-radius: 2px; line-height: 1; transition: color 0.1s, background 0.1s; flex-shrink: 0; }
+  th:hover .col-btn { color: var(--text-muted); }
+  .col-btn:hover { color: var(--text) !important; background: var(--border); }
+  .col-btn.del:hover { color: #8b3a2a !important; }
 
   .th-add-btn { width: 100%; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px 6px; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
   .th-add-btn:hover { color: var(--accent); }
@@ -301,30 +290,9 @@ function buildBody(rows, hdrs, table) {
 function makeColHeader(h, ci, total, table) {
   const th = document.createElement("th");
 
-  // Floating controls above
-  const controls = document.createElement("div");
-  controls.className = "th-controls";
-  if (ci > 0) {
-    const ml = document.createElement("button");
-    ml.className = "col-btn"; ml.textContent = "←"; ml.title = "Move left";
-    ml.onclick = e => { e.stopPropagation(); moveCol(ci, -1, table); };
-    controls.appendChild(ml);
-  }
-  if (ci < total - 1) {
-    const mr = document.createElement("button");
-    mr.className = "col-btn"; mr.textContent = "→"; mr.title = "Move right";
-    mr.onclick = e => { e.stopPropagation(); moveCol(ci, 1, table); };
-    controls.appendChild(mr);
-  }
-  if (ci > 0) {
-    const dc = document.createElement("button");
-    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
-    dc.onclick = e => { e.stopPropagation(); deleteColumn(ci, table); };
-    controls.appendChild(dc);
-  }
-
   const inner = document.createElement("div");
   inner.className = "th-inner";
+
   const name = document.createElement("span");
   name.className = "th-name";
   name.contentEditable = "true";
@@ -337,7 +305,13 @@ function makeColHeader(h, ci, total, table) {
   name.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); name.blur(); } };
   inner.appendChild(name);
 
-  th.appendChild(controls);
+  if (ci > 0) {
+    const dc = document.createElement("button");
+    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
+    dc.onclick = e => { e.stopPropagation(); deleteColumn(ci, table); };
+    inner.appendChild(dc);
+  }
+
   th.appendChild(inner);
   return th;
 }
