@@ -713,6 +713,168 @@ function restoreFromState(state) {
   }
 }
 
+function makePositionCard(h, posQty, container) {
+  const card = document.createElement("div");
+  card.className = "position-card";
+  card.dataset.header = h;
+  card.dataset.qty = posQty;
+
+  const label = document.createElement("div");
+  label.className = "position-label";
+  label.textContent = h;
+
+  const qtyEl = document.createElement("div");
+  qtyEl.className = "position-qty";
+  const type = getTypeFromHeader(h);
+  const unit = (type === "Zipper" || type === "Furniture") ? "pcs" : "sqm";
+  qtyEl.textContent = `× ${posQty} ${unit}`;
+
+  const img = document.createElement("img");
+  img.onload = () => { img.classList.add("loaded"); img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;"; }
+  img.onerror = () => img.classList.remove("loaded");
+  img.style.display = "none";
+  const placeholder = document.createElement("span");
+  placeholder.className = "thumb-placeholder";
+  const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
+  placeholder.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+  const selects = document.createElement("div");
+  selects.className = "position-selects";
+
+  const priceEl = document.createElement("div");
+  priceEl.className = "position-price na";
+  priceEl.textContent = "—";
+
+  const filtered = filterMaterialsByHeader(h);
+
+  const matWrap = document.createElement("div");
+  matWrap.className = "mat-dropdown-wrap";
+
+  const matInput = document.createElement("input");
+  matInput.className = "mat-search-input";
+  matInput.placeholder = "— select material —";
+  matInput.readOnly = true;
+  matInput.dataset.selectedIdx = "";
+
+  const matList = document.createElement("div");
+  matList.className = "mat-dropdown-list";
+
+  const searchBox = document.createElement("div");
+  searchBox.className = "mat-search-box";
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.placeholder = "Search…";
+  searchBox.appendChild(searchInput);
+  matList.appendChild(searchBox);
+
+  const optionsContainer = document.createElement("div");
+  matList.appendChild(optionsContainer);
+
+  const colorSel = document.createElement("select");
+  colorSel.className = "color-select";
+  colorSel.innerHTML = '<option value="">— color —</option>';
+  colorSel.classList.add("sel-hidden");
+
+  const optSel = document.createElement("select");
+  optSel.className = "opt-select";
+  optSel.innerHTML = '<option value="">— option —</option>';
+  optSel.classList.add("sel-hidden");
+
+  function buildOptions(query) {
+    optionsContainer.innerHTML = "";
+    const q = query.toLowerCase();
+    const results = filtered.filter(m => !q || (m.title || "").toLowerCase().includes(q));
+    if (!results.length) {
+      const no = document.createElement("div");
+      no.className = "mat-option no-results";
+      no.textContent = "No results";
+      optionsContainer.appendChild(no);
+      return;
+    }
+    results.forEach(m => {
+      const realIdx = materials.indexOf(m);
+      const opt = document.createElement("div");
+      opt.className = "mat-option";
+      if (matInput.dataset.selectedIdx === String(realIdx)) opt.classList.add("selected");
+      opt.textContent = m.title || m.url;
+      opt.onclick = () => {
+        matInput.dataset.selectedIdx = realIdx;
+        matInput.value = m.title || m.url;
+        matList.classList.remove("open");
+        onMatSelected(realIdx, img, colorSel, optSel, priceEl, posQty);
+        onAnyChange();
+      };
+      optionsContainer.appendChild(opt);
+    });
+  }
+
+  matInput.onclick = (e) => {
+    e.stopPropagation();
+    matList.classList.toggle("open");
+    if (matList.classList.contains("open")) {
+      searchInput.value = "";
+      buildOptions("");
+      setTimeout(() => searchInput.focus(), 50);
+    }
+  };
+  searchInput.oninput = () => buildOptions(searchInput.value);
+  searchInput.onclick = (e) => e.stopPropagation();
+  document.addEventListener("click", (e) => {
+    if (!matWrap.contains(e.target)) matList.classList.remove("open");
+  });
+
+  colorSel.onchange = () => {
+    const mi = parseInt(matInput.dataset.selectedIdx);
+    const mat = isNaN(mi) ? null : materials[mi];
+    if (!mat) return;
+    const c = (mat.colors || [])[parseInt(colorSel.value)];
+    if (c?.image) img.src = c.image;
+    updateColorSelectStyle(colorSel, mat);
+    onAnyChange();
+  };
+  optSel.onchange = onAnyChange;
+
+  matWrap.appendChild(matInput);
+  matWrap.appendChild(matList);
+  selects.appendChild(matWrap);
+  selects.appendChild(colorSel);
+  selects.appendChild(optSel);
+
+  const thumbCol = document.createElement("div");
+  thumbCol.className = "position-card-thumb-col";
+  thumbCol.style.cursor = "pointer";
+  thumbCol.appendChild(img);
+  thumbCol.appendChild(placeholder);
+  thumbCol.addEventListener("click", () => {
+    const src = img.src && img.classList.contains("loaded") ? img.src : null;
+    openLightbox(src, placeholder.textContent, thumbCol);
+  });
+
+  const content = document.createElement("div");
+  content.className = "position-card-content";
+
+  const cardTop = document.createElement("div");
+  cardTop.className = "position-card-top";
+  cardTop.appendChild(label);
+  cardTop.appendChild(qtyEl);
+
+  const cardMiddle = document.createElement("div");
+  cardMiddle.className = "position-card-middle";
+  cardMiddle.appendChild(selects);
+
+  const priceRow = document.createElement("div");
+  priceRow.className = "position-card-bottom-price";
+  priceRow.appendChild(priceEl);
+
+  content.appendChild(cardTop);
+  content.appendChild(cardMiddle);
+  content.appendChild(priceRow);
+
+  card.appendChild(thumbCol);
+  card.appendChild(content);
+  container.appendChild(card);
+}
+
 function renderPositions(product) {
   const container = document.getElementById("positions");
   container.innerHTML = "";
@@ -722,172 +884,14 @@ function renderPositions(product) {
   posHeaders.forEach(h => {
     const posQty = parseFloat((product[h] || "0").replace(",", "."));
     if (!posQty) return;
-
-    const card = document.createElement("div");
-    card.className = "position-card";
-    card.dataset.header = h;
-    card.dataset.qty = posQty;
-
-    const label = document.createElement("div");
-    label.className = "position-label";
-    label.textContent = h;
-
-    const qtyEl = document.createElement("div");
-    qtyEl.className = "position-qty";
-    const type = getTypeFromHeader(h);
-    const unit = (type === "Zipper" || type === "Furniture") ? "pcs" : "sqm";
-    qtyEl.textContent = `× ${posQty} ${unit}`;
-
-    const img = document.createElement("img");
-    img.onload = () => { img.classList.add("loaded"); img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;"; }
-    img.onerror = () => img.classList.remove("loaded");
-    img.style.display = "none";
-    const placeholder = document.createElement("span");
-    placeholder.className = "thumb-placeholder";
-    const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
-    placeholder.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-
-    const selects = document.createElement("div");
-    selects.className = "position-selects";
-
-    const priceEl = document.createElement("div");
-    priceEl.className = "position-price na";
-    priceEl.textContent = "—";
-
-    const filtered = filterMaterialsByHeader(h);
-
-    const matWrap = document.createElement("div");
-    matWrap.className = "mat-dropdown-wrap";
-
-    const matInput = document.createElement("input");
-    matInput.className = "mat-search-input";
-    matInput.placeholder = "— select material —";
-    matInput.readOnly = true;
-    matInput.dataset.selectedIdx = "";
-
-    const matList = document.createElement("div");
-    matList.className = "mat-dropdown-list";
-
-    const searchBox = document.createElement("div");
-    searchBox.className = "mat-search-box";
-    const searchInput = document.createElement("input");
-    searchInput.type = "text";
-    searchInput.placeholder = "Search…";
-    searchBox.appendChild(searchInput);
-    matList.appendChild(searchBox);
-
-    const optionsContainer = document.createElement("div");
-    matList.appendChild(optionsContainer);
-
-    const colorSel = document.createElement("select");
-    colorSel.className = "color-select";
-    colorSel.innerHTML = '<option value="">— color —</option>';
-    colorSel.classList.add("sel-hidden");
-
-    const optSel = document.createElement("select");
-    optSel.className = "opt-select";
-    optSel.innerHTML = '<option value="">— option —</option>';
-    optSel.classList.add("sel-hidden");
-
-    function buildOptions(query) {
-      optionsContainer.innerHTML = "";
-      const q = query.toLowerCase();
-      const results = filtered.filter(m => !q || (m.title || "").toLowerCase().includes(q));
-      if (!results.length) {
-        const no = document.createElement("div");
-        no.className = "mat-option no-results";
-        no.textContent = "No results";
-        optionsContainer.appendChild(no);
-        return;
-      }
-      results.forEach(m => {
-        const realIdx = materials.indexOf(m);
-        const opt = document.createElement("div");
-        opt.className = "mat-option";
-        if (matInput.dataset.selectedIdx === String(realIdx)) opt.classList.add("selected");
-        opt.textContent = m.title || m.url;
-        opt.onclick = () => {
-          matInput.dataset.selectedIdx = realIdx;
-          matInput.value = m.title || m.url;
-          matList.classList.remove("open");
-          onMatSelected(realIdx, img, colorSel, optSel, priceEl, posQty);
-          onAnyChange();
-        };
-        optionsContainer.appendChild(opt);
-      });
-    }
-
-    matInput.onclick = (e) => {
-      e.stopPropagation();
-      matList.classList.toggle("open");
-      if (matList.classList.contains("open")) {
-        searchInput.value = "";
-        buildOptions("");
-        setTimeout(() => searchInput.focus(), 50);
-      }
-    };
-    searchInput.oninput = () => buildOptions(searchInput.value);
-    searchInput.onclick = (e) => e.stopPropagation();
-    document.addEventListener("click", (e) => {
-      if (!matWrap.contains(e.target)) matList.classList.remove("open");
-    });
-
-    colorSel.onchange = () => {
-      const mi = parseInt(matInput.dataset.selectedIdx);
-      const mat = isNaN(mi) ? null : materials[mi];
-      if (!mat) return;
-      const c = (mat.colors || [])[parseInt(colorSel.value)];
-      if (c?.image) img.src = c.image;
-      updateColorSelectStyle(colorSel, mat);
-      onAnyChange();
-    };
-    optSel.onchange = onAnyChange;
-
-    matWrap.appendChild(matInput);
-    matWrap.appendChild(matList);
-    selects.appendChild(matWrap);
-    selects.appendChild(colorSel);
-    selects.appendChild(optSel);
-
-    const thumbCol = document.createElement("div");
-    thumbCol.className = "position-card-thumb-col";
-    thumbCol.style.cursor = "pointer";
-    thumbCol.appendChild(img);
-    thumbCol.appendChild(placeholder);
-    thumbCol.addEventListener("click", () => {
-      const src = img.src && img.classList.contains("loaded") ? img.src : null;
-      openLightbox(src, placeholder.textContent, thumbCol);
-    });
-
-    const content = document.createElement("div");
-    content.className = "position-card-content";
-
-    const cardTop = document.createElement("div");
-    cardTop.className = "position-card-top";
-    cardTop.appendChild(label);
-    cardTop.appendChild(qtyEl);
-
-    const cardMiddle = document.createElement("div");
-    cardMiddle.className = "position-card-middle";
-    cardMiddle.appendChild(selects);
-
-    const priceRow = document.createElement("div");
-    priceRow.className = "position-card-bottom-price";
-    priceRow.appendChild(priceEl);
-
-    content.appendChild(cardTop);
-    content.appendChild(cardMiddle);
-    content.appendChild(priceRow);
-
-    card.appendChild(thumbCol);
-    card.appendChild(content);
-    container.appendChild(card);
+    makePositionCard(h, posQty, container);
   });
 
   if (!container.children.length) {
     container.innerHTML = '<div class="empty-state">No material positions for this product</div>';
   }
 }
+
 
 function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
@@ -1157,143 +1161,7 @@ function addFeatureCard(feat) {
   posHeaders.forEach(h => {
     const posQty = parseFloat((feat[h] || "0").replace(",", "."));
     if (!posQty) return;
-
-    const posCard = document.createElement("div");
-    posCard.className = "position-card";
-    posCard.dataset.header = h;
-    posCard.dataset.qty = posQty;
-
-    const type = getTypeFromHeader(h);
-    const unit = (type === "Zipper" || type === "Furniture") ? "pcs" : "sqm";
-
-    const cardTop = document.createElement("div");
-    cardTop.className = "position-card-top";
-    const label = document.createElement("div");
-    label.className = "position-label";
-    label.textContent = h;
-    const qtyEl = document.createElement("div");
-    qtyEl.className = "position-qty";
-    qtyEl.textContent = `× ${posQty} ${unit}`;
-    cardTop.appendChild(label);
-    cardTop.appendChild(qtyEl);
-
-    const priceEl = document.createElement("div");
-    priceEl.className = "position-price na";
-    priceEl.textContent = "—";
-
-    const img = document.createElement("img");
-    img.onload = () => { img.classList.add("loaded"); img.style.display = "block"; if(img.nextElementSibling) img.nextElementSibling.style.display = "none"; };
-    img.onerror = () => { img.classList.remove("loaded"); img.style.display = "none"; if(img.nextElementSibling) img.nextElementSibling.style.display = ""; };
-    img.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;";
-    const placeholder = document.createElement("span");
-    placeholder.className = "thumb-placeholder";
-    const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
-    placeholder.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-
-    const thumbCol = document.createElement("div");
-    thumbCol.className = "position-card-thumb-col";
-    thumbCol.style.cursor = "pointer";
-    thumbCol.appendChild(img);
-    thumbCol.appendChild(placeholder);
-    thumbCol.addEventListener("click", () => {
-      const src = img.src && img.classList.contains("loaded") ? img.src : null;
-      openLightbox(src, placeholder.textContent, thumbCol);
-    });
-
-    const filtered = filterMaterialsByHeader(h);
-    const selects = document.createElement("div");
-    selects.className = "position-selects";
-    const matWrap = document.createElement("div");
-    matWrap.className = "mat-dropdown-wrap";
-    const matInput = document.createElement("input");
-    matInput.className = "mat-search-input";
-    matInput.placeholder = "— select material —";
-    matInput.readOnly = true;
-    matInput.dataset.selectedIdx = "";
-    const matList = document.createElement("div");
-    matList.className = "mat-dropdown-list";
-    const searchBox = document.createElement("div");
-    searchBox.className = "mat-search-box";
-    const searchInput = document.createElement("input");
-    searchInput.type = "text"; searchInput.placeholder = "Search…";
-    searchBox.appendChild(searchInput); matList.appendChild(searchBox);
-    const optionsContainer = document.createElement("div");
-    matList.appendChild(optionsContainer);
-
-    const colorSel = document.createElement("select");
-    colorSel.className = "color-select";
-    colorSel.classList.add("sel-hidden");
-    colorSel.innerHTML = '<option value="">— color —</option>';
-
-    function buildOptions(query) {
-      optionsContainer.innerHTML = "";
-      const q = query.toLowerCase();
-      const results = filtered.filter(m => !q || (m.title || "").toLowerCase().includes(q));
-      if (!results.length) {
-        const no = document.createElement("div");
-        no.className = "mat-option no-results"; no.textContent = "No results";
-        optionsContainer.appendChild(no); return;
-      }
-      results.forEach(m => {
-        const realIdx = materials.indexOf(m);
-        const opt = document.createElement("div");
-        opt.className = "mat-option";
-        if (matInput.dataset.selectedIdx === String(realIdx)) opt.classList.add("selected");
-        opt.textContent = m.title || m.url;
-        opt.onclick = () => {
-          matInput.dataset.selectedIdx = realIdx;
-          matInput.value = m.title || m.url;
-          matList.classList.remove("open");
-          onMatSelected(realIdx, img, colorSel, null, priceEl, posQty);
-          onAnyChange();
-        };
-        optionsContainer.appendChild(opt);
-      });
-    }
-
-    matInput.onclick = e => {
-      e.stopPropagation();
-      matList.classList.toggle("open");
-      if (matList.classList.contains("open")) {
-        const rect = matInput.getBoundingClientRect();
-        matList.style.top = (rect.bottom + window.scrollY + 2) + "px";
-        matList.style.left = rect.left + "px";
-        matList.style.width = rect.width + "px";
-        searchInput.value = ""; buildOptions("");
-        setTimeout(() => searchInput.focus(), 50);
-      }
-    };
-    searchInput.oninput = () => buildOptions(searchInput.value);
-    searchInput.onclick = e => e.stopPropagation();
-    document.addEventListener("click", e => { if (!matWrap.contains(e.target)) matList.classList.remove("open"); });
-    colorSel.onchange = () => {
-      const mi = parseInt(matInput.dataset.selectedIdx);
-      const mat = isNaN(mi) ? null : materials[mi];
-      if (!mat) return;
-      const c = (mat.colors || [])[parseInt(colorSel.value)];
-      if (c?.image) img.src = c.image;
-      updateColorSelectStyle(colorSel, mat);
-      onAnyChange();
-    };
-
-    matWrap.appendChild(matInput); matWrap.appendChild(matList);
-    selects.appendChild(matWrap); selects.appendChild(colorSel);
-
-    const content = document.createElement("div");
-    content.className = "position-card-content";
-    const cardMiddle = document.createElement("div");
-    cardMiddle.className = "position-card-middle";
-    cardMiddle.appendChild(selects);
-    const priceRow = document.createElement("div");
-    priceRow.className = "position-card-bottom-price";
-    priceRow.appendChild(priceEl);
-    content.appendChild(cardTop);
-    content.appendChild(cardMiddle);
-    content.appendChild(priceRow);
-
-    posCard.appendChild(thumbCol);
-    posCard.appendChild(content);
-    bottom.appendChild(posCard);
+    makePositionCard(h, posQty, bottom);
   });
 
   card.appendChild(top);
