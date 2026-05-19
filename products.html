@@ -78,30 +78,29 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .table-wrap {
-    background: var(--surface);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
-    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     width: 100%;
+    background: var(--surface);
+    position: relative;
   }
 
-  .table-wrap-body {
-    border-top: none;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      var(--surface) 0px,
-      var(--surface) 28px,
-      #f0ede6 28px,
-      #f0ede6 56px
-    );
-    background-attachment: local;
+  .zebra-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .zebra-bg-stripe {
+    position: absolute; left: 0; right: 0;
+    background: #f0ede6;
   }
 
   body { overflow-x: hidden; }
 
-  table { width: auto; min-width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table { width: auto; min-width: 0; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
   thead { background: var(--bg); }
   thead tr { position: relative; }
 
@@ -204,26 +203,18 @@
 
 <div class="status-bar" id="statusBar"></div>
 
-<div class="table-wrap">
+<div class="table-wrap" id="productsWrap">
   <table>
     <thead id="thead"></thead>
-  </table>
-</div>
-<div class="table-wrap table-wrap-body">
-  <table>
     <tbody id="tbody"></tbody>
   </table>
 </div>
 
 <div style="height:1.5rem;"></div>
 <div class="status-bar" id="featStatusBar"></div>
-<div class="table-wrap">
+<div class="table-wrap" id="featuresWrap">
   <table>
     <thead id="fthead"></thead>
-  </table>
-</div>
-<div class="table-wrap table-wrap-body">
-  <table>
     <tbody id="ftbody"></tbody>
   </table>
 </div>
@@ -304,6 +295,28 @@ function buildBody(rows, hdrs, table) {
   addBtn.textContent = table === "products" ? "+ Add product" : "+ Add feature";
   addBtn.onclick = () => addRow(table);
   addTd.appendChild(addBtn); addTr.appendChild(addTd); tbody.appendChild(addTr);
+  paintZebra(table);
+}
+
+function paintZebra(table) {
+  const wrapId = table === "products" ? "productsWrap" : "featuresWrap";
+  const tbodyId = table === "products" ? "tbody" : "ftbody";
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  let bg = wrap.querySelector(".zebra-bg");
+  if (!bg) { bg = document.createElement("div"); bg.className = "zebra-bg"; wrap.appendChild(bg); }
+  bg.innerHTML = "";
+  const theadHeight = wrap.querySelector("thead")?.offsetHeight || 0;
+  const rows = [...wrap.querySelectorAll(`#${tbodyId} tr:not(.add-row-tr)`)];
+  rows.forEach((tr, i) => {
+    if (i % 2 === 1) {
+      const stripe = document.createElement("div");
+      stripe.className = "zebra-bg-stripe";
+      stripe.style.top = (theadHeight + tr.offsetTop) + "px";
+      stripe.style.height = tr.offsetHeight + "px";
+      bg.appendChild(stripe);
+    }
+  });
 }
 
 function makeColHeader(h, ci, total, table) {
@@ -432,6 +445,7 @@ function addRow(table) {
   tbody.insertBefore(tr, addRowTr);
   tr.querySelector("td[contenteditable]")?.focus();
   if (table === "products") scheduleSave(); else scheduleFeatSave();
+  requestAnimationFrame(() => paintZebra(table));
 }
 
 function scheduleSave() {
