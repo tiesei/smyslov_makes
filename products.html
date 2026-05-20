@@ -372,15 +372,19 @@ function moveColumn(from, to, table) {
   const hdrs = table === "products" ? headers : featHeaders;
   const rows = table === "products" ? getProductsFromDOM() : getFeaturesFromDOM();
 
-  // Swap header
-  [hdrs[from], hdrs[to]] = [hdrs[to], hdrs[from]];
-  // Swap data in each row
+  // Save header names before swap
+  const keyFrom = hdrs[from];
+  const keyTo = hdrs[to];
+
+  // Swap data in each row using original keys
   rows.forEach(r => {
-    const keys = Object.keys(r);
-    const tmp = r[hdrs[from]];
-    r[hdrs[from]] = r[hdrs[to]];
-    r[hdrs[to]] = tmp;
+    const tmp = r[keyFrom];
+    r[keyFrom] = r[keyTo];
+    r[keyTo] = tmp;
   });
+
+  // Swap headers
+  [hdrs[from], hdrs[to]] = [hdrs[to], hdrs[from]];
 
   if (table === "products") { headers = hdrs; render(hdrs, rows); scheduleSave(); }
   else { featHeaders = hdrs; renderFeatures(hdrs, rows); scheduleFeatSave(); }
