@@ -732,9 +732,9 @@ function makePositionCard(h, posQty, container) {
   qtyEl.textContent = `× ${posQty} ${unit}`;
 
   const img = document.createElement("img");
-  img.onload = () => { img.classList.add("loaded"); img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;"; }
-  img.onerror = () => img.classList.remove("loaded");
-  img.style.display = "none";
+  img.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;";
+  img.onload = () => { img.classList.add("loaded"); img.style.display = "block"; if(img.nextElementSibling) img.nextElementSibling.style.display = "none"; };
+  img.onerror = () => { img.classList.remove("loaded"); img.style.display = "none"; if(img.nextElementSibling) img.nextElementSibling.style.display = ""; };
   const placeholder = document.createElement("span");
   placeholder.className = "thumb-placeholder";
   const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
@@ -848,7 +848,7 @@ function makePositionCard(h, posQty, container) {
   thumbCol.appendChild(img);
   thumbCol.appendChild(placeholder);
   thumbCol.addEventListener("click", () => {
-    const src = img.src && img.classList.contains("loaded") ? img.src : null;
+    const src = img.classList.contains("loaded") ? img.src : null;
     openLightbox(src, placeholder.textContent, thumbCol);
   });
 
