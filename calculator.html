@@ -1001,11 +1001,25 @@ function renderTemplates(templates) {
     const name = document.createElement("div");
     name.className = "template-name";
     name.textContent = t.name;
-    name.contentEditable = "true";
+    name.contentEditable = "false";
     name.spellcheck = false;
+    name.style.cursor = "default";
+    name.ondblclick = (e) => {
+      e.stopPropagation();
+      name.contentEditable = "true";
+      name.style.cursor = "text";
+      name.focus();
+      const range = document.createRange();
+      range.selectNodeContents(name);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    };
     name.onclick = (e) => e.stopPropagation();
     name.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); name.blur(); } };
     name.onblur = async () => {
+      name.contentEditable = "false";
+      name.style.cursor = "default";
       const newName = name.textContent.trim();
       if (!newName || newName === t.name) { name.textContent = t.name; return; }
       try {
