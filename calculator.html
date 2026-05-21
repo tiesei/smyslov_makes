@@ -1089,7 +1089,12 @@ async function saveTemplate() {
     });
     cacheInvalidate("templates");
     await loadTemplates();
-  } catch(e) { console.error("saveTemplate failed", e); }
+  } catch(e) {
+    console.error("saveTemplate failed", e);
+    alert("Save failed: " + (e?.message || e));
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+    return;
+  }
   if (btn) { btn.textContent = "saved ✓"; setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 1500); }
 }
 
@@ -1103,7 +1108,8 @@ async function deleteTemplate(name) {
 
 function loadTemplate(t) {
   try {
-    const state = typeof t.state === "string" ? JSON.parse(t.state) : t;
+    let state = t.state || t;
+    if (typeof state === "string") state = JSON.parse(state);
     restoreFromState(state);
   } catch(e) { console.warn("loadTemplate failed", e); }
 }
