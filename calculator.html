@@ -1090,6 +1090,13 @@ async function saveTemplate() {
   const origText = btn ? btn.textContent : "";
   if (btn) { btn.textContent = "saving…"; btn.disabled = true; }
   const state = collectState();
+  console.log("saveTemplate state:", JSON.stringify(state).slice(0, 300));
+  // Fallback: use dropdown display text if productName is empty
+  if (!state.productName) {
+    const sel = document.getElementById("productSelect");
+    const opt = sel.options[sel.selectedIndex];
+    if (opt) state.productName = opt.textContent.trim();
+  }
   if (!state.productName) {
     alert("Select a product first");
     if (btn) { btn.textContent = origText; btn.disabled = false; }
