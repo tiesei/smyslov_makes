@@ -587,7 +587,7 @@ function populateProductSelect() {
   products.forEach((p, i) => {
     const opt = document.createElement("option");
     opt.value = i;
-    opt.textContent = p[headers[0]] || `Product ${i+1}`;
+    opt.textContent = p[headers[0]] || Object.values(p)[0] || `Product ${i+1}`;
     sel.appendChild(opt);
   });
 }
@@ -647,7 +647,7 @@ function collectState() {
   };
   const pidx = parseInt(state.productIdx);
   if (!isNaN(pidx) && products[pidx]) {
-    state.productName = products[pidx][headers[0]] || "";
+    state.productName = products[pidx][headers[0]] || Object.values(products[pidx])[0] || "";
   }
   document.querySelectorAll(".position-card").forEach(card => {
     const matInput = card.querySelector(".mat-search-input");
@@ -676,7 +676,7 @@ function restoreFromState(state) {
     const sel = document.getElementById("productSelect");
     let idx = -1;
     if (state.productName) {
-      idx = products.findIndex(p => p[headers[0]] === state.productName);
+      idx = products.findIndex(p => p[headers[0]] === state.productName || Object.values(p)[0] === state.productName);
     }
     if (idx === -1) idx = parseInt(state.productIdx);
     if (!isNaN(idx) && products[idx]) {
@@ -1221,6 +1221,19 @@ function openLightbox(imgSrc, placeholderText, thumbEl) {
 
 function closeLightbox() {
   document.getElementById("thumbLightbox").classList.remove("open");
+}
+
+
+
+function resetCalc() {
+  document.getElementById("productSelect").value = "";
+  document.getElementById("qty").value = "1";
+  document.getElementById("positions").innerHTML = "";
+  document.getElementById("featuresAdded").innerHTML = "";
+  document.getElementById("featuresSection").style.display = "none";
+  document.getElementById("summary").style.display = "none";
+  document.getElementById("draftLabel").style.display = "none";
+  recalc();
 }
 
 
