@@ -418,6 +418,7 @@ function makeDataRow(product, ri, hdrs, table) {
   const tdAdd = document.createElement("td"); tr.appendChild(tdAdd);
   const tdDel = document.createElement("td");
   tdDel.className = "td-del";
+  const delBtn = document.createElement("button");
   delBtn.className = "del-row-btn"; delBtn.textContent = "✕"; delBtn.title = "Delete";
   delBtn.onclick = () => { tr.remove(); if (table === "products") scheduleSave(); else scheduleFeatSave(); };
   tdDel.appendChild(delBtn); tr.appendChild(tdDel);
