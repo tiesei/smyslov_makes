@@ -605,7 +605,8 @@ function renderRow(item, idx) {
     delBtn.textContent = "…"; delBtn.disabled = true;
     try {
       await apiFetch(`${API}/materials?url=${encodeURIComponent(itemUrl)}`, { method: "DELETE" });
-      tr.remove();
+      allMaterials = allMaterials.filter(item => item.url !== itemUrl);
+      refreshMaterialsView();
     } catch(e) { delBtn.textContent = "✕"; delBtn.disabled = false; }
   };
   tdAction.appendChild(repBtn);
@@ -643,6 +644,19 @@ function renderTable() {
     return;
   }
   data.forEach((item, i) => tbody.appendChild(renderRow(item, i)));
+}
+
+function refreshMaterialsView() {
+  cacheSet("materials", allMaterials);
+  buildTypeDropdown();
+  renderTable();
+}
+
+function upsertMaterial(material) {
+  const idx = allMaterials.findIndex(item => item.url === material.url);
+  if (idx >= 0) allMaterials[idx] = material;
+  else allMaterials.push(material);
+  refreshMaterialsView();
 }
 
 async function loadMaterials() {
@@ -686,7 +700,7 @@ async function addMaterial() {
     if (!res.ok) { const e = await res.json(); throw new Error(e.detail || "Parse failed"); }
     const data = await res.json();
     input.value = "";
-    cacheInvalidate('materials'); await loadMaterials();
+    upsertMaterial(data);
     setStatus(`✓ Added: ${data.title}`, "");
     setTimeout(clearStatus, 3000);
   } catch(e) {
@@ -709,7 +723,8 @@ async function reparseMaterial(url, btn) {
     });
     clearTimeout(timer);
     if (!res.ok) throw new Error("Reparse failed");
-    cacheInvalidate('materials'); await loadMaterials();
+    const data = await res.json();
+    upsertMaterial(data);
     setStatus("✓ Refreshed", "");
     setTimeout(clearStatus, 2000);
   } catch(e) {
