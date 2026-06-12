@@ -228,7 +228,7 @@ function clearFeatStatus(d = 0) { setTimeout(() => { const b = document.getEleme
 async function loadProducts() {
   const cached = cacheGet("products");
   if (cached) { headers = cached.headers.length ? cached.headers : ["Product Name"]; render(headers, cached.products || []); }
-  else setStatus("Loadingâ€¦", "loading");
+  else setStatus("Loading…", "loading");
   try {
     const res = await apiFetch(`${API}/products`);
     const data = await res.json();
@@ -237,14 +237,14 @@ async function loadProducts() {
     render(headers, data.products || []);
     clearStatus();
   } catch(e) {
-    if (!cached) setStatus("Failed to load â€” API may be waking up, try again in 30s.", "error");
+    if (!cached) setStatus("Failed to load — API may be waking up, try again in 30s.", "error");
   }
 }
 
 async function loadFeatures() {
   const cached = cacheGet("features");
   if (cached) { featHeaders = cached.headers && cached.headers.length ? cached.headers : ["Feature Name"]; renderFeatures(featHeaders, cached.features || []); }
-  else setFeatStatus("Loadingâ€¦", "loading");
+  else setFeatStatus("Loading…", "loading");
   try {
     const res = await apiFetch(`${API}/features`);
     const data = await res.json();
@@ -298,7 +298,7 @@ function makeColHeader(h, ci, total, table) {
   // Left arrow
   if (ci > 1) {
     const ml = document.createElement("button");
-    ml.className = "col-btn"; ml.textContent = "â†"; ml.title = "Move left";
+    ml.className = "col-btn"; ml.textContent = "←"; ml.title = "Move left";
     ml.onclick = e => { e.stopPropagation(); moveColumn(ci, ci - 1, table); };
     inner.appendChild(ml);
   }
@@ -319,15 +319,15 @@ function makeColHeader(h, ci, total, table) {
   // Right arrow
   if (ci > 0 && ci < total - 1) {
     const mr = document.createElement("button");
-    mr.className = "col-btn"; mr.textContent = "â†’"; mr.title = "Move right";
+    mr.className = "col-btn"; mr.textContent = "→"; mr.title = "Move right";
     mr.onclick = e => { e.stopPropagation(); moveColumn(ci, ci + 1, table); };
     inner.appendChild(mr);
   }
 
-  // Delete â€” 5px gap from right arrow
+  // Delete — 5px gap from right arrow
   if (ci > 0) {
     const dc = document.createElement("button");
-    dc.className = "col-btn del"; dc.textContent = "âœ•"; dc.title = "Delete column";
+    dc.className = "col-btn del"; dc.textContent = "✕"; dc.title = "Delete column";
     dc.style.marginLeft = "7px";
     dc.onclick = e => { e.stopPropagation(); deleteColumn(ci, table); };
     inner.appendChild(dc);
@@ -341,7 +341,7 @@ function moveColumn(from, to, table) {
   const hdrs = table === "products" ? headers : featHeaders;
   const rows = table === "products" ? getProductsFromDOM() : getFeaturesFromDOM();
 
-  // Only swap header order â€” render uses header names as keys so data follows automatically
+  // Only swap header order — render uses header names as keys so data follows automatically
   [hdrs[from], hdrs[to]] = [hdrs[to], hdrs[from]];
 
   if (table === "products") { headers = hdrs; render(hdrs, rows); scheduleSave(); }
@@ -357,14 +357,14 @@ function makeDataRow(product, ri, hdrs, table) {
     else {
       const n = parseFloat(val);
       td.className = (!val || val === "0" || n === 0) ? "zero" : "num-cell";
-      td.textContent = val || "â€”";
+      td.textContent = val || "—";
     }
     td.contentEditable = "true";
     td.spellcheck = false;
-    td.onfocus = () => { if (td.textContent === "â€”") td.textContent = ""; };
+    td.onfocus = () => { if (td.textContent === "—") td.textContent = ""; };
     td.onblur = () => {
       const v = td.textContent.trim();
-      if (!v && ci !== 0) td.textContent = "â€”";
+      if (!v && ci !== 0) td.textContent = "—";
       if (ci > 0) { const n = parseFloat(v); td.className = (!v || v === "0" || n === 0) ? "zero" : "num-cell"; }
       if (table === "products") scheduleSave(); else scheduleFeatSave();
     };
@@ -384,7 +384,7 @@ function makeDataRow(product, ri, hdrs, table) {
   const tdDel = document.createElement("td");
   tdDel.className = "td-del";
   const delBtn = document.createElement("button");
-  delBtn.className = "del-row-btn"; delBtn.textContent = "âœ•"; delBtn.title = "Delete";
+  delBtn.className = "del-row-btn"; delBtn.textContent = "✕"; delBtn.title = "Delete";
   delBtn.onclick = () => { tr.remove(); if (table === "products") scheduleSave(); else scheduleFeatSave(); };
   tdDel.appendChild(delBtn); tr.appendChild(tdDel);
   return tr;
@@ -421,7 +421,7 @@ function getProductsFromDOM() {
   return [...document.getElementById("tbody").querySelectorAll("tr:not(.add-row-tr)")].map(tr => {
     const cells = [...tr.querySelectorAll("td[contenteditable]")];
     const obj = {};
-    headers.forEach((h, i) => { let v = cells[i]?.textContent.trim() || ""; if (v === "â€”") v = ""; obj[h] = v; });
+    headers.forEach((h, i) => { let v = cells[i]?.textContent.trim() || ""; if (v === "—") v = ""; obj[h] = v; });
     return obj;
   });
 }
@@ -430,7 +430,7 @@ function getFeaturesFromDOM() {
   return [...document.getElementById("ftbody").querySelectorAll("tr:not(.add-row-tr)")].map(tr => {
     const cells = [...tr.querySelectorAll("td[contenteditable]")];
     const obj = {};
-    featHeaders.forEach((h, i) => { let v = cells[i]?.textContent.trim() || ""; if (v === "â€”") v = ""; obj[h] = v; });
+    featHeaders.forEach((h, i) => { let v = cells[i]?.textContent.trim() || ""; if (v === "—") v = ""; obj[h] = v; });
     return obj;
   });
 }
@@ -450,19 +450,19 @@ function addRow(table) {
 
 function scheduleSave() {
   clearTimeout(saveTimer);
-  setStatus("Unsaved changesâ€¦");
+  setStatus("Unsaved changes…");
   saveTimer = setTimeout(saveAll, 1500);
 }
 
 function scheduleFeatSave() {
   clearTimeout(featSaveTimer);
-  setFeatStatus("Unsaved changesâ€¦");
+  setFeatStatus("Unsaved changes…");
   featSaveTimer = setTimeout(saveFeatAll, 1500);
 }
 
 async function saveAll() {
   clearTimeout(saveTimer);
-  setStatus("Savingâ€¦", "loading");
+  setStatus("Saving…", "loading");
   try {
     const res = await fetch(`${API}/products`, {
       method: "POST",
@@ -471,16 +471,16 @@ async function saveAll() {
     });
     if (!res.ok) throw new Error();
     cacheInvalidate("products");
-    setStatus("âœ“ Saved", "ok");
+    setStatus("✓ Saved", "ok");
     clearStatus(2000);
   } catch(e) {
-    setStatus("Save failed â€” check connection", "error");
+    setStatus("Save failed — check connection", "error");
   }
 }
 
 async function saveFeatAll() {
   clearTimeout(featSaveTimer);
-  setFeatStatus("Savingâ€¦", "loading");
+  setFeatStatus("Saving…", "loading");
   try {
     const res = await fetch(`${API}/features`, {
       method: "POST",
@@ -489,10 +489,10 @@ async function saveFeatAll() {
     });
     if (!res.ok) throw new Error();
     cacheInvalidate("features");
-    setFeatStatus("âœ“ Saved", "ok");
+    setFeatStatus("✓ Saved", "ok");
     clearFeatStatus(2000);
   } catch(e) {
-    setFeatStatus("Save failed â€” check connection", "error");
+    setFeatStatus("Save failed — check connection", "error");
   }
 }
 
@@ -503,4 +503,3 @@ loadFeatures();
 </script>
 </body>
 </html>
-
