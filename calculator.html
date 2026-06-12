@@ -1077,7 +1077,8 @@ function renderTemplates(templates) {
     saveBtn.title = "Save current state";
     saveBtn.onclick = async (e) => {
       e.stopPropagation();
-      saveBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+      const originalIcon = saveBtn.innerHTML;
+      saveBtn.textContent = "saving";
       saveBtn.disabled = true;
       const state = collectState();
       state.name = t.name;
@@ -1086,9 +1087,17 @@ function renderTemplates(templates) {
           method: "POST", headers: {"Content-Type":"application/json"},
           body: JSON.stringify(state)
         });
-      } catch(err) { console.error("save failed", err); }
+        saveBtn.textContent = "✓";
+      } catch(err) {
+        console.error("save failed", err);
+        saveBtn.textContent = "!";
+      }
       cacheInvalidate("templates");
       await loadTemplates();
+      setTimeout(() => {
+        saveBtn.innerHTML = originalIcon;
+        saveBtn.disabled = false;
+      }, 1200);
     };
 
     actions.appendChild(editBtn);
