@@ -612,7 +612,8 @@ function collectState() {
     productIdx: document.getElementById("productSelect").value,
     productName: "",
     rate: document.getElementById("hourlyRate").value,
-    positions: []
+    positions: [],
+    features: []
   };
   const pidx = parseInt(state.productIdx);
   if (!isNaN(pidx) && products[pidx]) {
@@ -633,6 +634,25 @@ function collectState() {
         optVal: optSel?.value || ""
       });
     }
+  });
+  document.querySelectorAll("#featuresAdded > .feature-card").forEach(card => {
+    state.features.push({
+      name: card.dataset.featname || "",
+      positions: [...card.querySelectorAll(".position-card")].map(pos => {
+        const matInput = pos.querySelector(".mat-search-input");
+        const colorSel = pos.querySelector(".color-select");
+        const optSel = pos.querySelector(".opt-select");
+        const mi = parseInt(matInput?.dataset.selectedIdx);
+        const mat = isNaN(mi) ? null : materials[mi];
+        return {
+          header: pos.dataset.header,
+          matUrl: mat?.url || "",
+          matTitle: matInput?.value || "",
+          colorIdx: colorSel?.value || "",
+          optVal: optSel?.value || ""
+        };
+      })
+    });
   });
   return state;
 }
@@ -678,6 +698,33 @@ function restoreFromState(state) {
           }
           if (saved.optVal && optSel) optSel.value = saved.optVal;
         }
+      });
+      document.getElementById("featuresAdded").innerHTML = "";
+      (state.features || []).forEach(savedFeature => {
+        const nameHeader = featuresData.headers[0];
+        const feat = featuresData.features.find(f => (f[nameHeader] || "") === savedFeature.name);
+        if (!feat) return;
+        addFeatureCard(feat);
+        const featureCard = document.querySelector("#featuresAdded > .feature-card:last-child");
+        featureCard?.querySelectorAll(".position-card").forEach(card => {
+          const saved = savedFeature.positions?.find(p => p.header === card.dataset.header);
+          if (!saved || !saved.matUrl) return;
+          const mat = materials.find(m => m.url === saved.matUrl);
+          if (!mat) return;
+          const mi = materials.indexOf(mat);
+          const matInput = card.querySelector(".mat-search-input");
+          const colorSel = card.querySelector(".color-select");
+          const optSel = card.querySelector(".opt-select");
+          const img = card.querySelector("img");
+          const priceEl = card.querySelector(".position-price");
+          if (matInput) {
+            matInput.dataset.selectedIdx = mi;
+            matInput.value = saved.matTitle || mat.title || "";
+            onMatSelected(mi, img, colorSel, optSel, priceEl, parseFloat(card.dataset.qty));
+            if (saved.colorIdx !== "" && colorSel) colorSel.value = saved.colorIdx;
+            if (saved.optVal && optSel) optSel.value = saved.optVal;
+          }
+        });
       });
       recalc();
     }, 100);
