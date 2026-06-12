@@ -481,6 +481,7 @@ let products = [], headers = [], materials = [], isAdmin = false;
 let featuresData = { headers: [], features: [] };
 let autosaveTimer = null;
 let activeEditTemplate = null;
+let templatesCache = [];
 
 function loadFromCache() {
   const cp = cacheGet("products");
@@ -998,12 +999,14 @@ async function loadTemplates() {
     const res = await apiFetch(`${API}/templates`);
     if (!res.ok) return;
     const templates = await res.json();
+    templatesCache = templates;
     cacheSet("templates", templates);
     renderTemplates(templates);
   } catch(e) { console.warn("loadTemplates failed", e); }
 }
 
 function renderTemplates(templates) {
+  templatesCache = templates || [];
   const sidebar = document.getElementById("templatesSidebar");
   const empty = document.getElementById("templatesEmpty");
   sidebar.querySelectorAll(".template-card").forEach(el => el.remove());
@@ -1110,6 +1113,14 @@ function renderTemplates(templates) {
   });
 }
 
+function uniqueTemplateName(baseName) {
+  const existing = new Set((templatesCache || []).map(t => t.name));
+  if (!existing.has(baseName)) return baseName;
+  let i = 1;
+  while (existing.has(`${baseName}_${i}`)) i++;
+  return `${baseName}_${i}`;
+}
+
 async function saveTemplate() {
   const btn = document.querySelector(".btn-new-tmpl");
   const origText = btn ? btn.textContent : "";
@@ -1127,7 +1138,7 @@ async function saveTemplate() {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
     return;
   }
-  state.name = state.productName;
+  state.name = uniqueTemplateName(state.productName);
   try {
     await apiFetch(`${API}/templates`, {
       method: "POST", headers: {"Content-Type":"application/json"},
@@ -1273,17 +1284,4 @@ function closeLightbox() {
 
 function resetCalc() {
   document.getElementById("productSelect").value = "";
-  document.getElementById("qty").value = "1";
-  document.getElementById("positions").innerHTML = "";
-  document.getElementById("featuresAdded").innerHTML = "";
-  document.getElementById("featuresSection").style.display = "none";
-  document.getElementById("summary").style.display = "none";
-  document.getElementById("draftLabel").style.display = "none";
-  recalc();
-}
-
-
-init();
-</script>
-</body>
-</html>
+  document.getElementById("qty").value = 
