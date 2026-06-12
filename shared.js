@@ -1,4 +1,4 @@
-﻿const API = "https://materials-parser-api.onrender.com";
+const API = "https://materials-parser-api.onrender.com";
 
 function cacheSet(key, data) {
   try {
