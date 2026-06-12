@@ -475,7 +475,7 @@ function renderRow(item, idx) {
   const tdType = document.createElement("td");
   tdType.className = "col-type";
   const typeSel = document.createElement("select");
-  typeSel.className = "type-select" + (!item.type ? " unset" : "");
+  typeSel.className = "type-select" + ((!item.type || item.needsTypeReview) ? " unset" : "");
   const ph = document.createElement("option");
   ph.value = ""; ph.textContent = "Select…"; ph.disabled = true; ph.selected = !item.type;
   typeSel.appendChild(ph);
@@ -488,6 +488,8 @@ function renderRow(item, idx) {
   typeSel.onchange = () => {
     typeSel.classList.remove("unset");
     item.type = typeSel.value;
+    delete item.needsTypeReview;
+    refreshMaterialsView();
     saveType(itemUrl, typeSel.value);
   };
   tdType.appendChild(typeSel);
@@ -653,6 +655,7 @@ function refreshMaterialsView() {
 }
 
 function upsertMaterial(material) {
+  material.needsTypeReview = true;
   const idx = allMaterials.findIndex(item => item.url === material.url);
   if (idx >= 0) allMaterials[idx] = material;
   else allMaterials.push(material);
