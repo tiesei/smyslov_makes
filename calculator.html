@@ -139,7 +139,7 @@
   .positions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
   @media (max-width: 700px) { .positions { grid-template-columns: 1fr; } }
 
-  /* â”€â”€ POSITION CARD â”€â”€ */
+  /* ── POSITION CARD ── */
   .position-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     display: flex; min-height: 0; overflow: hidden;
@@ -337,7 +337,7 @@
     .mobile-templates-strip { display: none !important; }
   }
 
-  /* â”€â”€ THUMB LIGHTBOX â”€â”€ */
+  /* ── THUMB LIGHTBOX ── */
   .thumb-lightbox-overlay {
     display: none; position: fixed; inset: 0; z-index: 99999;
     pointer-events: none; background: rgba(0,0,0,0.15);
@@ -374,8 +374,8 @@
 <div class="thumb-lightbox-overlay" id="thumbLightbox" onclick="if(event.target===this)closeLightbox();">
   <div class="thumb-lightbox-box" id="thumbLightboxBox">
     <img id="thumbLightboxImg" src="" alt="">
-    <div class="thumb-lightbox-no-img" id="thumbLightboxPlaceholder" style="display:none">ðŸ§µ</div>
-    <button class="thumb-lightbox-close" onclick="closeLightbox()">âœ•</button>
+    <div class="thumb-lightbox-no-img" id="thumbLightboxPlaceholder" style="display:none">🧵</div>
+    <button class="thumb-lightbox-close" onclick="closeLightbox()">✕</button>
   </div>
 </div>
 
@@ -399,7 +399,7 @@
 <div class="mobile-top">
   <span class="field-label">Rate /hr</span>
   <input class="field-input" type="number" id="hourlyRateMobile" value="20" min="0" step="1" oninput="document.getElementById('hourlyRate').value=this.value;onAnyChange()">
-  <span class="field-label">â‚¬</span>
+  <span class="field-label">€</span>
   <button class="btn-save-tmpl" onclick="saveTemplate()" style="font-size:11px;padding:4px 10px;">save new draft</button>
 </div>
 <div class="mobile-templates-strip" id="mobileTemplatesStrip"></div>
@@ -408,7 +408,7 @@
     <div class="product-bar">
       <input class="qty-input" type="number" id="qty" value="1" min="1" step="1" oninput="onAnyChange()">
       <select class="product-select" id="productSelect" onchange="onProductChange()">
-        <option value="">â€” select product â€”</option>
+        <option value="">— select product —</option>
       </select>
       <button class="btn-reset" onclick="resetCalc()">Reset</button>
     </div>
@@ -430,7 +430,7 @@
           <button class="feat-add-btn" id="featAddBtn" onclick="toggleFeatDropdown()">+ add feature</button>
           <div class="mat-dropdown-list" id="featDropList">
             <div class="mat-search-box">
-              <input type="text" id="featSearchInput" placeholder="Search featuresâ€¦" oninput="filterFeatOptions(this.value)" onclick="event.stopPropagation()">
+              <input type="text" id="featSearchInput" placeholder="Search features…" oninput="filterFeatOptions(this.value)" onclick="event.stopPropagation()">
             </div>
             <div id="featOptions"></div>
           </div>
@@ -441,23 +441,23 @@
     <div class="summary" id="summary" style="display:none;">
       <div class="summary-row">
         <span class="summary-label">Materials</span>
-        <span class="summary-value" id="sumMaterials">â€”</span>
+        <span class="summary-value" id="sumMaterials">—</span>
       </div>
       <div class="summary-row">
         <span class="summary-label">Labour</span>
-        <span class="summary-value" id="sumLabour">â€”</span>
+        <span class="summary-value" id="sumLabour">—</span>
       </div>
       <div class="summary-row admin-only">
         <span class="summary-label">Cost price</span>
-        <span class="summary-value" id="sumCost">â€”</span>
+        <span class="summary-value" id="sumCost">—</span>
       </div>
       <div class="summary-row admin-only">
         <span class="summary-label">Markup</span>
-        <span class="summary-value" id="sumMarkup">â€”</span>
+        <span class="summary-value" id="sumMarkup">—</span>
       </div>
       <div class="summary-row total">
         <span>Total</span>
-        <span class="summary-value" id="sumTotal">â€”</span>
+        <span class="summary-value" id="sumTotal">—</span>
       </div>
     </div>
   </div>
@@ -466,7 +466,7 @@
     <div class="sidebar-rate">
       <span class="field-label">Rate /hr</span>
       <input class="field-input rate-input" type="number" id="hourlyRate" value="20" min="0" step="1" oninput="onAnyChange()">
-      <span class="field-label">â‚¬</span>
+      <span class="field-label">€</span>
     </div>
     <button class="btn-save-tmpl btn-new-tmpl" onclick="saveTemplate()">save new draft</button>
     <div class="templates-label">Templates</div>
@@ -552,7 +552,7 @@ async function loadFeaturesData() {
 
 function populateProductSelect() {
   const sel = document.getElementById("productSelect");
-  sel.innerHTML = '<option value="">â€” select product â€”</option>';
+  sel.innerHTML = '<option value="">— select product —</option>';
   products.forEach((p, i) => {
     const opt = document.createElement("option");
     opt.value = i;
@@ -698,13 +698,13 @@ function makePositionCard(h, posQty, container) {
   qtyEl.className = "position-qty";
   const type = getTypeFromHeader(h);
   const unit = (type === "Zipper" || type === "Hardware") ? "pcs" : "sqm";
-  qtyEl.textContent = `Ã— ${posQty} ${unit}`;
+  qtyEl.textContent = `× ${posQty} ${unit}`;
 
   const img = document.createElement("img");
   img.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;";
   const placeholder = document.createElement("span");
   placeholder.className = "thumb-placeholder";
-  const EMOJIS = ["ðŸ§µ","ðŸª¡","âœ‚ï¸","ðŸ§¶","ðŸ“","ðŸª¢","ðŸŽ¨","ðŸ§·"];
+  const EMOJIS = ["🧵","🪡","✂️","🧶","📐","🪢","🎨","🧷"];
   placeholder.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
   img.onload = () => { img.classList.add("loaded"); img.style.display = "block"; placeholder.style.display = "none"; };
   img.onerror = () => { img.classList.remove("loaded"); img.style.display = "none"; placeholder.style.display = ""; };
@@ -713,7 +713,7 @@ function makePositionCard(h, posQty, container) {
 
   const priceEl = document.createElement("div");
   priceEl.className = "position-price na";
-  priceEl.textContent = "â€”";
+  priceEl.textContent = "—";
 
   const filtered = filterMaterialsByHeader(h);
 
@@ -722,7 +722,7 @@ function makePositionCard(h, posQty, container) {
 
   const matInput = document.createElement("input");
   matInput.className = "mat-search-input";
-  matInput.placeholder = "â€” select material â€”";
+  matInput.placeholder = "— select material —";
   matInput.readOnly = true;
   matInput.dataset.selectedIdx = "";
 
@@ -733,7 +733,7 @@ function makePositionCard(h, posQty, container) {
   searchBox.className = "mat-search-box";
   const searchInput = document.createElement("input");
   searchInput.type = "text";
-  searchInput.placeholder = "Searchâ€¦";
+  searchInput.placeholder = "Search…";
   searchBox.appendChild(searchInput);
   matList.appendChild(searchBox);
 
@@ -742,12 +742,12 @@ function makePositionCard(h, posQty, container) {
 
   const colorSel = document.createElement("select");
   colorSel.className = "color-select";
-  colorSel.innerHTML = '<option value="">â€” color â€”</option>';
+  colorSel.innerHTML = '<option value="">— color —</option>';
   colorSel.classList.add("sel-hidden");
 
   const optSel = document.createElement("select");
   optSel.className = "opt-select";
-  optSel.innerHTML = '<option value="">â€” option â€”</option>';
+  optSel.innerHTML = '<option value="">— option —</option>';
   optSel.classList.add("sel-hidden");
 
   function buildOptions(query) {
@@ -866,11 +866,11 @@ function renderPositions(product) {
 function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   const mat = isNaN(mi) ? null : materials[mi];
   if (!colorSel) return;
-  colorSel.innerHTML = '<option value="">â€” color â€”</option>';
+  colorSel.innerHTML = '<option value="">— color —</option>';
   colorSel.classList.add("sel-hidden");
-  if (optSel) { optSel.innerHTML = '<option value="">â€” option â€”</option>'; optSel.classList.add("sel-hidden"); }
+  if (optSel) { optSel.innerHTML = '<option value="">— option —</option>'; optSel.classList.add("sel-hidden"); }
   if (img) { img.classList.remove("loaded"); img.src = ""; }
-  if (priceEl) { priceEl.textContent = "â€”"; priceEl.className = "position-price na"; }
+  if (priceEl) { priceEl.textContent = "—"; priceEl.className = "position-price na"; }
   if (!mat) return;
 
   const colors = mat.colors || [];
@@ -890,7 +890,7 @@ function onMatSelected(mi, img, colorSel, optSel, priceEl, posQty) {
   }
 }
 
-// â”€â”€ OUT OF STOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── OUT OF STOCK ──────────────────────────────────────────────────────────────
 function updateColorSelectStyle(colorSel, mat) {
   const ci = parseInt(colorSel.value);
   const color = !isNaN(ci) ? (mat?.colors || [])[ci] : null;
@@ -898,7 +898,7 @@ function updateColorSelectStyle(colorSel, mat) {
   colorSel.classList.toggle("out-of-stock", !inStock);
 }
 
-// â”€â”€ RECALC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── RECALC ────────────────────────────────────────────────────────────────────
 function recalc() {
   const qty = parseInt(document.getElementById("qty").value) || 1;
   const rate = parseFloat(document.getElementById("hourlyRate").value) || 0;
@@ -924,7 +924,7 @@ function recalc() {
     const lineTotal = price * posQty * qty;
     matTotal += lineTotal;
     if (priceEl) {
-      priceEl.textContent = mat && price ? `${lineTotal.toFixed(2)} EUR` : "â€”";
+      priceEl.textContent = mat && price ? `${lineTotal.toFixed(2)} EUR` : "—";
       priceEl.className = "position-price" + (mat && price ? "" : " na");
     }
   });
@@ -943,7 +943,7 @@ function parsePrice(str) {
   return m ? parseFloat(m[0]) : 0;
 }
 
-// â”€â”€ TEMPLATES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── TEMPLATES ─────────────────────────────────────────────────────────────────
 async function loadTemplates() {
   const cached = cacheGet("templates");
   if (cached) renderTemplates(cached);
@@ -1006,11 +1006,11 @@ function renderTemplates(templates) {
 
     const del = document.createElement("button");
     del.className = "template-delete";
-    del.textContent = "Ã—";
+    del.textContent = "×";
     del.title = "Delete";
     del.onclick = async (e) => {
       e.stopPropagation();
-      del.textContent = "â€¦";
+      del.textContent = "…";
       del.disabled = true;
       await deleteTemplate(t.name);
     };
@@ -1057,7 +1057,7 @@ function renderTemplates(templates) {
 async function saveTemplate() {
   const btn = document.querySelector(".btn-new-tmpl");
   const origText = btn ? btn.textContent : "";
-  if (btn) { btn.textContent = "savingâ€¦"; btn.disabled = true; }
+  if (btn) { btn.textContent = "saving…"; btn.disabled = true; }
   const state = collectState();
   console.log("saveTemplate state:", JSON.stringify(state).slice(0, 300));
   // Fallback: use dropdown display text if productName is empty
@@ -1085,7 +1085,7 @@ async function saveTemplate() {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
     return;
   }
-  if (btn) { btn.textContent = "saved âœ“"; setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 1500); }
+  if (btn) { btn.textContent = "saved ✓"; setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 1500); }
 }
 
 async function deleteTemplate(name) {
@@ -1104,7 +1104,7 @@ function loadTemplate(t) {
   } catch(e) { console.warn("loadTemplate failed", e); }
 }
 
-// â”€â”€ FEATURES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── FEATURES ──────────────────────────────────────────────────────────────────
 function toggleFeatDropdown() {
   const list = document.getElementById("featDropList");
   list.classList.toggle("open");
@@ -1137,7 +1137,7 @@ function buildFeatOptions(query) {
   results.forEach(feat => {
     const opt = document.createElement("div");
     opt.className = "mat-option";
-    opt.textContent = feat[nameHeader] || "â€”";
+    opt.textContent = feat[nameHeader] || "—";
     opt.onclick = () => {
       document.getElementById("featDropList").classList.remove("open");
       addFeatureCard(feat);
@@ -1168,7 +1168,7 @@ function addFeatureCard(feat) {
 
   const removeBtn = document.createElement("button");
   removeBtn.className = "feature-remove-btn";
-  removeBtn.textContent = "Ã—";
+  removeBtn.textContent = "×";
   removeBtn.onclick = () => { card.remove(); onAnyChange(); };
 
   const bottom = document.createElement("div");
@@ -1186,7 +1186,7 @@ function addFeatureCard(feat) {
   document.getElementById("featuresAdded").appendChild(card);
 }
 
-// â”€â”€ LOGIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
 function handleLogin() {
   isAdmin = !isAdmin;
   document.body.classList.toggle("is-admin", isAdmin);
@@ -1194,7 +1194,7 @@ function handleLogin() {
   recalc();
 }
 
-// â”€â”€ START â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── START ─────────────────────────────────────────────────────────────────────
 
 function openLightbox(imgSrc, placeholderText, thumbEl) {
   const overlay = document.getElementById("thumbLightbox");
@@ -1204,7 +1204,7 @@ function openLightbox(imgSrc, placeholderText, thumbEl) {
     img.src = imgSrc; img.style.display = "block"; ph.style.display = "none";
   } else {
     img.style.display = "none"; ph.style.display = "flex";
-    ph.textContent = placeholderText || "ðŸ§µ";
+    ph.textContent = placeholderText || "🧵";
   }
   overlay.classList.add("open");
 }
@@ -1231,4 +1231,3 @@ init();
 </script>
 </body>
 </html>
-
