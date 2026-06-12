@@ -1284,4 +1284,17 @@ function closeLightbox() {
 
 function resetCalc() {
   document.getElementById("productSelect").value = "";
-  document.getElementById("qty").value = 
+  document.getElementById("qty").value = "1";
+  document.getElementById("positions").innerHTML = "";
+  document.getElementById("featuresAdded").innerHTML = "";
+  document.getElementById("featuresSection").style.display = "none";
+  document.getElementById("summary").style.display = "none";
+  document.getElementById("draftLabel").style.display = "none";
+  recalc();
+}
+
+
+init();
+</script>
+</body>
+</html>
