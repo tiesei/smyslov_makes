@@ -137,8 +137,8 @@
   }
   th.sortable { cursor: pointer; user-select: none; }
   th.sortable:hover { color: var(--text); }
-  th.sort-asc::after { content: " â†‘"; color: var(--accent); }
-  th.sort-desc::after { content: " â†“"; color: var(--accent); }
+  th.sort-asc::after { content: " ↑"; color: var(--accent); }
+  th.sort-desc::after { content: " ↓"; color: var(--accent); }
 
   th.col-type    { width: 90px; }
   th.col-photo   { width: 88px; }
@@ -268,7 +268,7 @@
 
 <main>
   <div class="add-bar">
-    <input type="url" id="urlInput" placeholder="Paste product URL from extremtextil.de or adventurexpert.comâ€¦" />
+    <input type="url" id="urlInput" placeholder="Paste product URL from extremtextil.de or adventurexpert.com…" />
     <button class="btn btn-primary" id="addBtn" onclick="addMaterial()">Add material</button>
   </div>
 
@@ -279,7 +279,7 @@
       <div class="multiselect-dropdown" id="typeDropdown"></div>
     </div>
     <button class="filter-clear" id="filterClearBtn" style="display:none" onclick="clearTypeFilter()">clear</button>
-    <input type="text" id="materialSearch" placeholder="Search materialsâ€¦" oninput="renderTable()"
+    <input type="text" id="materialSearch" placeholder="Search materials…" oninput="renderTable()"
       style="font-family:var(--mono);font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);outline:none;width:180px;">
   </div>
 
@@ -354,7 +354,7 @@ function buildTypeDropdown() {
     lbl.style.cssText = "flex:1;font-size:13px;";
 
     const del = document.createElement("button");
-    del.textContent = "âœ•";
+    del.textContent = "✕";
     del.title = "Delete type";
     del.style.cssText = "background:none;border:none;cursor:pointer;color:#aaa;font-size:10px;padding:0 2px;flex-shrink:0;";
     del.onmouseenter = () => del.style.color = "#8b3a2a";
@@ -381,7 +381,7 @@ function buildTypeDropdown() {
   const addRow = document.createElement("div");
   addRow.style.cssText = "display:flex;align-items:center;gap:4px;padding:4px 8px;border-top:1px solid var(--border);margin-top:4px;";
   const inp = document.createElement("input");
-  inp.type = "text"; inp.placeholder = "New typeâ€¦";
+  inp.type = "text"; inp.placeholder = "New type…";
   inp.style.cssText = "flex:1;font-size:12px;border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:var(--sans);background:var(--bg);color:var(--text);outline:none;";
   const addBtn = document.createElement("button");
   addBtn.textContent = "+";
@@ -405,7 +405,7 @@ function buildTypeDropdown() {
 
 function rebuildTypeSelect(sel) {
   const current = sel.value;
-  sel.innerHTML = '<option value="">â€” type â€”</option>';
+  sel.innerHTML = '<option value="">— type —</option>';
   TYPES.forEach(t => {
     const o = document.createElement("option");
     o.value = t; o.textContent = t;
@@ -477,7 +477,7 @@ function renderRow(item, idx) {
   const typeSel = document.createElement("select");
   typeSel.className = "type-select" + (!item.type ? " unset" : "");
   const ph = document.createElement("option");
-  ph.value = ""; ph.textContent = "Selectâ€¦"; ph.disabled = true; ph.selected = !item.type;
+  ph.value = ""; ph.textContent = "Select…"; ph.disabled = true; ph.selected = !item.type;
   typeSel.appendChild(ph);
   TYPES.forEach(t => {
     const o = document.createElement("option");
@@ -506,14 +506,14 @@ function renderRow(item, idx) {
   tdTitle.className = "col-title";
   const titleDiv = document.createElement("div");
   titleDiv.className = "title-text";
-  titleDiv.textContent = item.title || "â€”";
+  titleDiv.textContent = item.title || "—";
   tdTitle.appendChild(titleDiv);
   if (itemUrl) {
     const link = document.createElement("a");
     link.className = "title-link";
     link.href = itemUrl;
     link.target = "_blank";
-    link.textContent = "â†— open";
+    link.textContent = "↗ open";
     tdTitle.appendChild(link);
   }
 
@@ -528,7 +528,7 @@ function renderRow(item, idx) {
   tdNotes.className = "col-notes";
   const ta = document.createElement("textarea");
   ta.className = "notes";
-  ta.placeholder = "Add noteâ€¦";
+  ta.placeholder = "Add note…";
   ta.value = item.notes || "";
   let noteTimer = null;
   ta.oninput = () => {
@@ -549,14 +549,14 @@ function renderRow(item, idx) {
 
   const tdWeight = document.createElement("td");
   tdWeight.className = "mono-cell col-weight";
-  tdWeight.textContent = item.weight || "â€”";
+  tdWeight.textContent = item.weight || "—";
 
   const tdPrice = document.createElement("td");
   tdPrice.className = "mono-cell col-price";
   const initP = colors[0]?.price_per_unit;
   tdPrice.textContent = initP
     ? initP.toFixed(2).replace(".", ",") + " EUR"
-    : (item.price || "â€”");
+    : (item.price || "—");
 
   if (colors.length > 0) {
     const colorSel = document.createElement("select");
@@ -576,7 +576,7 @@ function renderRow(item, idx) {
       if (c.image) img.src = c.image;
       tdPrice.textContent = c.price_per_unit
         ? c.price_per_unit.toFixed(2).replace(".", ",") + " EUR"
-        : (item.price || "â€”");
+        : (item.price || "—");
     };
     tdColors.appendChild(colorSel);
 
@@ -590,23 +590,23 @@ function renderRow(item, idx) {
       tdColors.appendChild(optSel);
     }
   } else {
-    tdColors.innerHTML = `<span style="color:var(--text-muted);font-size:12px;">â€”</span>`;
+    tdColors.innerHTML = `<span style="color:var(--text-muted);font-size:12px;">—</span>`;
   }
 
   const tdAction = document.createElement("td");
   tdAction.className = "col-action";
   const repBtn = document.createElement("button");
-  repBtn.className = "reparse-btn"; repBtn.title = "Refresh"; repBtn.textContent = "â†»";
+  repBtn.className = "reparse-btn"; repBtn.title = "Refresh"; repBtn.textContent = "↻";
   repBtn.onclick = () => reparseMaterial(itemUrl, repBtn);
   const delBtn = document.createElement("button");
-  delBtn.className = "delete-btn"; delBtn.title = "Delete"; delBtn.textContent = "âœ•";
+  delBtn.className = "delete-btn"; delBtn.title = "Delete"; delBtn.textContent = "✕";
   delBtn.onclick = async () => {
     if (!confirm("Delete this material?")) return;
-    delBtn.textContent = "â€¦"; delBtn.disabled = true;
+    delBtn.textContent = "…"; delBtn.disabled = true;
     try {
       await apiFetch(`${API}/materials?url=${encodeURIComponent(itemUrl)}`, { method: "DELETE" });
       tr.remove();
-    } catch(e) { delBtn.textContent = "âœ•"; delBtn.disabled = false; }
+    } catch(e) { delBtn.textContent = "✕"; delBtn.disabled = false; }
   };
   tdAction.appendChild(repBtn);
   tdAction.appendChild(delBtn);
@@ -637,8 +637,8 @@ function renderTable() {
 
   if (!data.length) {
     tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
-      <div style="font-size:32px;margin-bottom:8px">â¬¡</div>
-      <p>${allMaterials.length === 0 ? "No materials yet â€” paste a URL above to add one." : "No materials match the filter."}</p>
+      <div style="font-size:32px;margin-bottom:8px">⬡</div>
+      <p>${allMaterials.length === 0 ? "No materials yet — paste a URL above to add one." : "No materials match the filter."}</p>
     </div></td></tr>`;
     return;
   }
@@ -652,7 +652,7 @@ async function loadMaterials() {
     buildTypeDropdown();
     renderTable();
   } else {
-    setStatus("Loadingâ€¦", "loading");
+    setStatus("Loading…", "loading");
   }
   try {
     const res = await apiFetch(`${API}/materials`);
@@ -663,7 +663,7 @@ async function loadMaterials() {
     renderTable();
     clearStatus();
   } catch(e) {
-    if (!cached) setStatus("Failed to load. API may be waking up â€” try again in 30s.", "error");
+    if (!cached) setStatus("Failed to load. API may be waking up — try again in 30s.", "error");
     else clearStatus();
   }
 }
@@ -674,7 +674,7 @@ async function addMaterial() {
   if (!url) return;
   const btn = document.getElementById("addBtn");
   btn.disabled = true;
-  setStatus("Parsingâ€¦ this may take 1â€“2 minutes.", "loading");
+  setStatus("Parsing… this may take 1–2 minutes.", "loading");
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 180000);
@@ -687,10 +687,10 @@ async function addMaterial() {
     const data = await res.json();
     input.value = "";
     cacheInvalidate('materials'); await loadMaterials();
-    setStatus(`âœ“ Added: ${data.title}`, "");
+    setStatus(`✓ Added: ${data.title}`, "");
     setTimeout(clearStatus, 3000);
   } catch(e) {
-    setStatus(`Error: ${e.name === "AbortError" ? "Timeout â€” try again" : e.message}`, "error");
+    setStatus(`Error: ${e.name === "AbortError" ? "Timeout — try again" : e.message}`, "error");
   } finally {
     btn.disabled = false;
   }
@@ -699,7 +699,7 @@ async function addMaterial() {
 async function reparseMaterial(url, btn) {
   if (!url) return;
   btn.classList.add("spinning");
-  setStatus("Refreshingâ€¦", "loading");
+  setStatus("Refreshing…", "loading");
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 180000);
@@ -710,10 +710,10 @@ async function reparseMaterial(url, btn) {
     clearTimeout(timer);
     if (!res.ok) throw new Error("Reparse failed");
     cacheInvalidate('materials'); await loadMaterials();
-    setStatus("âœ“ Refreshed", "");
+    setStatus("✓ Refreshed", "");
     setTimeout(clearStatus, 2000);
   } catch(e) {
-    setStatus(`Error: ${e.name === "AbortError" ? "Timeout â€” try again" : e.message}`, "error");
+    setStatus(`Error: ${e.name === "AbortError" ? "Timeout — try again" : e.message}`, "error");
   } finally {
     btn.classList.remove("spinning");
   }
@@ -750,4 +750,3 @@ loadMaterials();
 </script>
 </body>
 </html>
-
